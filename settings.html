@@ -1,0 +1,342 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Email Template Previewer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .settings-section { background: white; padding: 1.5rem; border-radius: 1rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .settings-section h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: #1e293b; }
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; font-weight: 500; margin-bottom: 0.5rem; color: #475569; }
+        .form-input { width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; }
+        .form-input:focus { outline: none; border-color: #3b82f6; ring: 2px; ring-color: #3b82f6; }
+        .btn { padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background-color: #3b82f6; color: white; }
+        .btn-primary:hover { background-color: #2563eb; }
+        .btn-secondary { background-color: #64748b; color: white; }
+        .btn-secondary:hover { background-color: #475569; }
+        .btn-danger { background-color: #ef4444; color: white; }
+        .btn-danger:hover { background-color: #dc2626; }
+        .btn-success { background-color: #10b981; color: white; }
+        .btn-success:hover { background-color: #059669; }
+        .spam-word-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: #f8fafc; border-radius: 0.5rem; margin-bottom: 0.5rem; }
+        .spam-word-category { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: 600; }
+        .category-urgency { background: #fee2e2; color: #991b1b; }
+        .category-shady { background: #fce7f3; color: #831843; }
+        .category-money { background: #fef3c7; color: #92400e; }
+        .category-overpromise { background: #fed7aa; color: #9a3412; }
+        .category-unnatural { background: #e2e8f0; color: #334155; }
+        .notification { position: fixed; top: 1rem; right: 1rem; padding: 1rem; background: #10b981; color: white; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000; }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-3xl font-bold text-slate-900">
+                <i class="fas fa-cog mr-2"></i> Settings
+            </h1>
+            <a href="index.html" class="btn btn-secondary">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Editor
+            </a>
+        </div>
+        <!-- AI Configuration Section -->
+        <div class="settings-section">
+            <h2><i class="fas fa-robot mr-2"></i> AI Configuration</h2>
+            <div class="form-group">
+                <label class="form-label">AI Model</label>
+                <select id="ai-model" class="form-input">
+                    <option value="claude-sonnet-4">Claude Sonnet 4 (Default)</option>
+                    <option value="gpt-4">GPT-4</option>
+                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    <option value="claude-3-opus">Claude 3 Opus</option>
+                </select>
+                <p class="text-sm text-slate-500 mt-1">Select the AI model to use for email optimization and suggestions</p>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Custom System Prompt</label>
+                <textarea id="system-prompt" class="form-input" rows="4" placeholder="Enter custom system prompt for AI (optional)">You are an expert email marketing assistant. Help users create professional, engaging, and spam-filter-friendly emails.</textarea>
+                <p class="text-sm text-slate-500 mt-1">Customize how the AI responds to your requests</p>
+            </div>
+            <button id="save-ai-config" class="btn btn-primary">
+                <i class="fas fa-save mr-2"></i> Save AI Configuration
+            </button>
+        </div>
+
+        <!-- Spam Words Management Section -->
+        <div class="settings-section">
+            <h2><i class="fas fa-shield-alt mr-2"></i> Spam Words Management</h2>
+            <div class="form-group">
+                <label class="form-label">Add New Spam Word</label>
+                <div class="flex gap-2">
+                    <input type="text" id="new-spam-word" class="form-input flex-1" placeholder="Enter spam word or phrase">
+                    <select id="spam-word-category" class="form-input" style="max-width: 150px;">
+                        <option value="urgency">Urgency</option>
+                        <option value="shady">Shady</option>
+                        <option value="money">Money</option>
+                        <option value="overpromise">Overpromise</option>
+                        <option value="unnatural">Unnatural</option>
+                    </select>
+                    <button id="add-spam-word-btn" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Custom Spam Words</label>
+                <div id="custom-spam-words-list" class="max-h-96 overflow-y-auto">
+                    <!-- Custom spam words will be listed here -->
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button id="export-spam-words" class="btn btn-secondary">
+                    <i class="fas fa-download mr-2"></i> Export Words
+                </button>
+                <button id="import-spam-words" class="btn btn-secondary">
+                    <i class="fas fa-upload mr-2"></i> Import Words
+                </button>
+                <input type="file" id="import-file" accept=".json" style="display: none;">
+            </div>
+        </div>
+        <!-- Email Signature Section -->
+        <div class="settings-section">
+            <h2><i class="fas fa-signature mr-2"></i> Email Signature</h2>
+            <div class="form-group">
+                <label class="form-label">Signature HTML</label>
+                <textarea id="signature-html" class="form-input font-mono text-sm" rows="8" placeholder="Enter your email signature HTML..."></textarea>
+                <p class="text-sm text-slate-500 mt-1">Enter HTML for your email signature. This can be inserted into your emails.</p>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Signature Preview</label>
+                <div id="signature-preview" class="border border-slate-300 rounded-lg p-4 bg-white min-h-24">
+                    <p class="text-slate-400 italic">No signature set</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button id="save-signature" class="btn btn-primary">
+                    <i class="fas fa-save mr-2"></i> Save Signature
+                </button>
+                <button id="clear-signature" class="btn btn-danger">
+                    <i class="fas fa-trash mr-2"></i> Clear Signature
+                </button>
+                <button id="insert-signature-to-editor" class="btn btn-secondary">
+                    <i class="fas fa-plus-circle mr-2"></i> Insert in Editor
+                </button>
+            </div>
+        </div>
+
+        <!-- Reset Settings Section -->
+        <div class="settings-section">
+            <h2><i class="fas fa-undo mr-2"></i> Reset Settings</h2>
+            <p class="text-slate-600 mb-4">Reset all settings to default values. This action cannot be undone.</p>
+            <button id="reset-all-settings" class="btn btn-danger">
+                <i class="fas fa-exclamation-triangle mr-2"></i> Reset All Settings
+            </button>
+        </div>
+    </div>
+
+    <div id="notification" class="notification" style="display: none;"></div>
+
+    <script>
+        // Settings Manager
+        const SettingsManager = {
+            init() {
+                this.loadSettings();
+                this.bindEvents();
+            },
+
+            loadSettings() {
+                // Load AI Configuration
+                const aiModel = localStorage.getItem('ai-model') || 'claude-sonnet-4';
+                const systemPrompt = localStorage.getItem('system-prompt') || 'You are an expert email marketing assistant. Help users create professional, engaging, and spam-filter-friendly emails.';
+                document.getElementById('ai-model').value = aiModel;
+                document.getElementById('system-prompt').value = systemPrompt;
+
+                // Load custom spam words
+                this.loadCustomSpamWords();
+
+                // Load signature
+                const signature = localStorage.getItem('email-signature') || '';
+                document.getElementById('signature-html').value = signature;
+                this.updateSignaturePreview();
+            },
+            bindEvents() {
+                // AI Configuration
+                document.getElementById('save-ai-config').addEventListener('click', () => this.saveAIConfig());
+
+                // Spam Words Management
+                document.getElementById('add-spam-word-btn').addEventListener('click', () => this.addCustomSpamWord());
+                document.getElementById('export-spam-words').addEventListener('click', () => this.exportSpamWords());
+                document.getElementById('import-spam-words').addEventListener('click', () => document.getElementById('import-file').click());
+                document.getElementById('import-file').addEventListener('change', (e) => this.importSpamWords(e));
+
+                // Signature Management
+                document.getElementById('signature-html').addEventListener('input', () => this.updateSignaturePreview());
+                document.getElementById('save-signature').addEventListener('click', () => this.saveSignature());
+                document.getElementById('clear-signature').addEventListener('click', () => this.clearSignature());
+                document.getElementById('insert-signature-to-editor').addEventListener('click', () => this.insertSignatureToEditor());
+
+                // Reset Settings
+                document.getElementById('reset-all-settings').addEventListener('click', () => this.resetAllSettings());
+            },
+
+            saveAIConfig() {
+                const model = document.getElementById('ai-model').value;
+                const prompt = document.getElementById('system-prompt').value;
+                localStorage.setItem('ai-model', model);
+                localStorage.setItem('system-prompt', prompt);
+                this.showNotification('AI configuration saved successfully!');
+            },
+
+            loadCustomSpamWords() {
+                const customWords = JSON.parse(localStorage.getItem('custom-spam-words') || '[]');
+                const container = document.getElementById('custom-spam-words-list');
+                
+                if (customWords.length === 0) {
+                    container.innerHTML = '<p class="text-slate-400 italic">No custom spam words added yet</p>';
+                    return;
+                }
+
+                container.innerHTML = customWords.map((word, index) => `
+                    <div class="spam-word-item">
+                        <div>
+                            <span class="font-medium">${word.keyword}</span>
+                            <span class="spam-word-category category-${word.category} ml-2">${word.category}</span>
+                        </div>
+                        <button class="text-red-600 hover:text-red-700" onclick="SettingsManager.removeCustomSpamWord(${index})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `).join('');
+            },
+
+            addCustomSpamWord() {
+                const word = document.getElementById('new-spam-word').value.trim();
+                const category = document.getElementById('spam-word-category').value;
+
+                if (!word) {
+                    this.showNotification('Please enter a spam word', 'error');
+                    return;
+                }
+
+                const customWords = JSON.parse(localStorage.getItem('custom-spam-words') || '[]');
+                customWords.push({
+                    keyword: word,
+                    category: category,
+                    highlight: new RegExp('\\\\b' + word.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&') + '\\\\b', 'gi').source
+                });
+
+                localStorage.setItem('custom-spam-words', JSON.stringify(customWords));
+                document.getElementById('new-spam-word').value = '';
+                this.loadCustomSpamWords();
+                this.showNotification('Spam word added successfully!');
+            },
+            removeCustomSpamWord(index) {
+                const customWords = JSON.parse(localStorage.getItem('custom-spam-words') || '[]');
+                customWords.splice(index, 1);
+                localStorage.setItem('custom-spam-words', JSON.stringify(customWords));
+                this.loadCustomSpamWords();
+                this.showNotification('Spam word removed successfully!');
+            },
+
+            exportSpamWords() {
+                const customWords = JSON.parse(localStorage.getItem('custom-spam-words') || '[]');
+                const dataStr = JSON.stringify(customWords, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'custom-spam-words.json';
+                link.click();
+                URL.revokeObjectURL(url);
+                this.showNotification('Spam words exported successfully!');
+            },
+
+            importSpamWords(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const importedWords = JSON.parse(e.target.result);
+                        if (!Array.isArray(importedWords)) {
+                            throw new Error('Invalid format');
+                        }
+                        localStorage.setItem('custom-spam-words', JSON.stringify(importedWords));
+                        this.loadCustomSpamWords();
+                        this.showNotification('Spam words imported successfully!');
+                    } catch (error) {
+                        this.showNotification('Error importing spam words. Invalid file format.', 'error');
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            },
+
+            updateSignaturePreview() {
+                const html = document.getElementById('signature-html').value;
+                const preview = document.getElementById('signature-preview');
+                if (html.trim()) {
+                    preview.innerHTML = html;
+                } else {
+                    preview.innerHTML = '<p class="text-slate-400 italic">No signature set</p>';
+                }
+            },
+
+            saveSignature() {
+                const signature = document.getElementById('signature-html').value;
+                localStorage.setItem('email-signature', signature);
+                this.showNotification('Signature saved successfully!');
+            },
+
+            clearSignature() {
+                if (confirm('Are you sure you want to clear your signature?')) {
+                    document.getElementById('signature-html').value = '';
+                    localStorage.removeItem('email-signature');
+                    this.updateSignaturePreview();
+                    this.showNotification('Signature cleared successfully!');
+                }
+            },
+
+            insertSignatureToEditor() {
+                const signature = localStorage.getItem('email-signature');
+                if (!signature) {
+                    this.showNotification('No signature saved. Please save a signature first.', 'error');
+                    return;
+                }
+                localStorage.setItem('insert-signature-flag', 'true');
+                window.location.href = 'index.html';
+            },
+            resetAllSettings() {
+                if (confirm('Are you sure you want to reset ALL settings? This cannot be undone.')) {
+                    localStorage.removeItem('ai-model');
+                    localStorage.removeItem('system-prompt');
+                    localStorage.removeItem('custom-spam-words');
+                    localStorage.removeItem('email-signature');
+                    this.loadSettings();
+                    this.showNotification('All settings have been reset to defaults!');
+                }
+            },
+
+            showNotification(message, type = 'success') {
+                const notification = document.getElementById('notification');
+                notification.textContent = message;
+                notification.style.display = 'block';
+                notification.style.backgroundColor = type === 'error' ? '#ef4444' : '#10b981';
+                
+                setTimeout(() => {
+                    notification.style.display = 'none';
+                }, 3000);
+            }
+        };
+
+        // Initialize settings manager
+        SettingsManager.init();
+    </script>
+</body>
+</html>
