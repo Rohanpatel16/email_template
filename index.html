@@ -1336,25 +1336,37 @@
             while ((n = walker.nextNode())) nodes.push(n);
 
             const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const toQuoteVariants = (s) => [
+                s,
+                s.replace(/'/g, '’'),
+                s.replace(/’/g, "'")
+            ];
+            const toFlexibleSpace = (s) => s.replace(/\s+/g, '\\s+');
+            const isWordLike = (s) => /^(?:[\p{L}\p{N}_]+)$/u.test(s);
             let count = 0;
             nodes.forEach(node => {
                 let text = node.nodeValue;
                 mapping.forEach(({ from, to }) => {
                     if (!from || typeof to !== 'string') return;
-                    // Word-boundary or phrase-safe replace: avoid inside tags (text nodes only) and inside other words
-                    const pattern = new RegExp(`\\b${escapeRegex(from)}\\b`, 'gi');
-                    const before = text;
-                    text = text.replace(pattern, () => {
-                        count++;
-                        return to;
-                    });
-                    // If no boundary match, try literal phrase replace (spaces/punct handled) but still case-insensitive
-                    if (before === text) {
-                        const phrase = new RegExp(escapeRegex(from), 'gi');
-                        text = text.replace(phrase, () => {
-                            count++;
-                            return to;
-                        });
+                    const candidates = toQuoteVariants(from);
+                    let replacedThisTerm = false;
+                    for (const candidate of candidates) {
+                        const beforeCandidate = text;
+                        if (isWordLike(candidate)) {
+                            // word-like: use word boundaries
+                            const pat = new RegExp(`\\b${escapeRegex(candidate)}\\b`, 'gi');
+                            text = text.replace(pat, () => { count++; replacedThisTerm = true; return to; });
+                        } else {
+                            // phrase-like: flexible whitespace, no word boundaries
+                            const pat = new RegExp(toFlexibleSpace(escapeRegex(candidate)), 'gi');
+                            text = text.replace(pat, () => { count++; replacedThisTerm = true; return to; });
+                        }
+                        if (text !== beforeCandidate) break;
+                    }
+                    if (!replacedThisTerm) {
+                        // final fallback: literal case-insensitive replace
+                        const fallback = new RegExp(escapeRegex(from), 'gi');
+                        text = text.replace(fallback, () => { count++; return to; });
                     }
                 });
                 node.nodeValue = text;
