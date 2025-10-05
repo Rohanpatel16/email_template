@@ -643,6 +643,11 @@
                 if (this.nodes.htmlInput.value !== newHtml) {
                     this.nodes.htmlInput.value = newHtml;
                     $(this.nodes.htmlInput).highlightWithinTextarea('update');
+                    // Trigger the normal pipeline (renderPreview, counts, autosave)
+                    // so that newly typed placeholders like {{name}} in the preview
+                    // are immediately recognized and rendered.
+                    this.nodes.htmlInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    return; // renderPreview will handle highlights and selection restore
                 }
                 // Reapply preview highlights after syncing source
                 this.highlightSpamInPreview();
