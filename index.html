@@ -454,6 +454,46 @@
                 return true;
             },
 
+            extractAIText(response) {
+                try {
+                    if (!response) return null;
+                    // puter.ai typical shape
+                    if (response.message && response.message.content) {
+                        const c = response.message.content;
+                        if (Array.isArray(c) && c[0] && (c[0].text || c[0].content || c[0].value)) {
+                            return c[0].text || c[0].content || c[0].value;
+                        }
+                        if (typeof c === 'string') return c;
+                    }
+                    // alt: direct string
+                    if (typeof response === 'string') return response;
+                    // alt: OpenAI-style
+                    if (response.choices && response.choices[0]) {
+                        const ch = response.choices[0];
+                        if (ch.message && typeof ch.message.content === 'string') return ch.message.content;
+                        if (typeof ch.text === 'string') return ch.text;
+                    }
+                    // alt: wrapped result
+                    if (response.result && response.result.message) {
+                        const m = response.result.message;
+                        if (typeof m.content === 'string') return m.content;
+                        if (Array.isArray(m.content) && m.content[0] && (m.content[0].text || m.content[0].content)) {
+                            return m.content[0].text || m.content[0].content;
+                        }
+                    }
+                    // alt: common fields
+                    if (response.content) {
+                        if (typeof response.content === 'string') return response.content;
+                        if (Array.isArray(response.content) && response.content[0]) {
+                            return response.content[0].text || response.content[0].content || null;
+                        }
+                    }
+                    return null;
+                } catch (_) {
+                    return null;
+                }
+            },
+
             init() {
                 this.queryNodes();
                 this.bindEvents();
@@ -787,11 +827,9 @@
                         fullPrompt,
                         { model: aiModel }
                     );
-                    if (response && response.message && response.message.content && response.message.content[0]) {
-                        this.showAIResponse(response.message.content[0].text);
-                    } else {
-                        throw new Error('Invalid response format');
-                    }
+                    const text = this.extractAIText(response);
+                    if (!text) throw new Error('Invalid/unknown AI response format');
+                    this.showAIResponse(text);
                 } catch (error) {
                     console.error('AI Optimization Error:', error);
                     this.showAIError('Failed to optimize content. Please check your internet connection and try again.');
@@ -815,11 +853,9 @@
                         fullPrompt,
                         { model: aiModel }
                     );
-                    if (response && response.message && response.message.content && response.message.content[0]) {
-                        this.showAIResponse(response.message.content[0].text);
-                    } else {
-                        throw new Error('Invalid response format');
-                    }
+                    const text = this.extractAIText(response);
+                    if (!text) throw new Error('Invalid/unknown AI response format');
+                    this.showAIResponse(text);
                 } catch (error) {
                     console.error('AI Suggestions Error:', error);
                     this.showAIError('Failed to get suggestions. Please check your internet connection and try again.');
@@ -844,11 +880,9 @@
                         `Rewrite this email content to have a ${tone} tone while maintaining the same message and structure:\n\n${content}`,
                         { model: aiModel }
                     );
-                    if (response && response.message && response.message.content && response.message.content[0]) {
-                        this.showAIResponse(response.message.content[0].text);
-                    } else {
-                        throw new Error('Invalid response format');
-                    }
+                    const text = this.extractAIText(response);
+                    if (!text) throw new Error('Invalid/unknown AI response format');
+                    this.showAIResponse(text);
                 } catch (error) {
                     console.error('AI Tone Adjustment Error:', error);
                     const msg = (error && (error.message || error.error || error.code)) ? `Failed to adjust tone: ${error.message || error.error || error.code}` : 'Failed to adjust tone. Please check your internet connection and try again.';
@@ -871,11 +905,9 @@
                         `Generate 5 compelling subject lines for this email content. Make them engaging and spam-filter friendly:\n\n${content}`,
                         { model: aiModel }
                     );
-                    if (response && response.message && response.message.content && response.message.content[0]) {
-                        this.showAIResponse(response.message.content[0].text);
-                    } else {
-                        throw new Error('Invalid response format');
-                    }
+                    const text = this.extractAIText(response);
+                    if (!text) throw new Error('Invalid/unknown AI response format');
+                    this.showAIResponse(text);
                 } catch (error) {
                     console.error('AI Subject Generation Error:', error);
                     this.showAIError('Failed to generate subject lines. Please check your internet connection and try again.');
