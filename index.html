@@ -260,6 +260,9 @@
                             <button id="ai-subject-btn" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center">
                                 <i class="fas fa-heading mr-2"></i>Generate Subject
                             </button>
+                            <button id="ai-rewrite-spam-btn" class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center">
+                                <i class="fas fa-broom mr-2"></i>Rewrite Spam Words
+                            </button>
                         </div>
                         <div id="ai-loading" class="hidden mt-3 p-3 bg-blue-100 rounded-lg">
                             <div class="flex items-center">
@@ -567,6 +570,7 @@
                 document.getElementById('ai-suggest-btn').addEventListener('click', () => this.getAISuggestions());
                 document.getElementById('ai-tone-btn').addEventListener('click', () => this.adjustTone());
                 document.getElementById('ai-subject-btn').addEventListener('click', () => this.generateSubject());
+                document.getElementById('ai-rewrite-spam-btn').addEventListener('click', () => this.rewriteSpamWords());
                 document.getElementById('copy-ai-response').addEventListener('click', () => {
                     const aiContent = document.getElementById('ai-content').textContent;
                     navigator.clipboard.writeText(aiContent);
@@ -1220,6 +1224,149 @@
                 this.nodes.htmlInput.dispatchEvent(new Event('input', { bubbles: true }));
                 this.showNotification('Signature inserted successfully!');
             }
+        };
+
+        // Extend EmailEditor with Spam Rewrite capability
+        EmailEditor.rewriteSpamWords = async function() {
+            const content = this.nodes.htmlInput.value;
+            if (!content.trim()) { this.showNotification('Please add some content first'); return; }
+
+            // Ensure preview is rendered and highlighted to collect current spam words
+            this.renderPreview();
+            const detected = this.collectCurrentSpamKeywords();
+            const defaultList = detected.slice(0, 30).join(', ');
+            const userList = prompt('Enter words/phrases to rewrite (comma-separated). Leave as is to use detected:', defaultList);
+            if (userList === null) return;
+            const terms = (userList || '').split(',').map(s => s.trim()).filter(Boolean);
+            if (terms.length === 0) { this.showNotification('No terms provided'); return; }
+
+            if (!this.aiReady()) return;
+            this.showAILoading();
+            try {
+                const aiModel = localStorage.getItem('ai-model') || 'claude-sonnet-4';
+                const prompt = [
+                    'You will receive a list of exact words/phrases and an email HTML.',
+                    'Return ONLY a JSON array of objects with shape: [{"from":"...","to":"..."}].',
+                    'Rules:',
+                    '- Propose safe, natural, non-spammy replacements.',
+                    '- Replace ONLY the provided words/phrases when they appear as text; do NOT change structure, HTML tags, links, or variables like {{name}}.',
+                    '- Keep case and punctuation sensible; if a phrase is part of a larger word, do not replace.',
+                    '',
+                    'TERMS:',
+                    JSON.stringify(terms),
+                    '',
+                    'EMAIL_HTML:',
+                    content
+                ].join('\n');
+
+                const response = await puter.ai.chat(prompt, { model: aiModel });
+                const text = this.extractAIText(response) || '';
+                const mapping = this.parseReplacementMapping(text);
+                if (!Array.isArray(mapping) || mapping.length === 0) {
+                    throw new Error('No valid replacements returned');
+                }
+
+                const applied = this.applyReplacementsToPreview(mapping);
+                if (applied === 0) {
+                    this.showAIResponse('No occurrences found to replace.');
+                } else {
+                    // Sync preview -> source, re-highlight, and show summary
+                    this.updateSourceFromPreview();
+                    this.showAIResponse(
+                        `Applied ${applied} replacement${applied === 1 ? '' : 's'}:<br>` +
+                        mapping.map(m => `${this.escapeHtml(m.from)} → <b>${this.escapeHtml(m.to)}</b>`).join('<br>')
+                    );
+                    this.showNotification('Spam words rewritten');
+                }
+            } catch (err) {
+                console.error('Spam Rewrite Error:', err);
+                this.showAIError('Failed to rewrite spam words. Try fewer terms or check connection.');
+            }
+        };
+
+        EmailEditor.collectCurrentSpamKeywords = function() {
+            const set = new Set();
+            // marks exist only in preview; ensure latest
+            this.nodes.emailPreview.querySelectorAll('mark[data-spam-keyword]').forEach(m => {
+                const k = (m.getAttribute('data-spam-keyword') || '').trim();
+                if (k) set.add(k);
+            });
+            return Array.from(set);
+        };
+
+        EmailEditor.parseReplacementMapping = function(text) {
+            if (!text) return [];
+            try {
+                // strip fences if present
+                const cleaned = text.replace(/```[\s\S]*?\n?/g, '').trim();
+                const jsonStart = cleaned.indexOf('[');
+                const jsonEnd = cleaned.lastIndexOf(']');
+                if (jsonStart !== -1 && jsonEnd !== -1) {
+                    const arr = JSON.parse(cleaned.slice(jsonStart, jsonEnd + 1));
+                    return (Array.isArray(arr) ? arr : []).filter(x => x && typeof x.from === 'string' && typeof x.to === 'string');
+                }
+            } catch(_) {}
+            // fallback: line format "from -> to"
+            const lines = text.split(/\r?\n/);
+            const pairs = [];
+            lines.forEach(line => {
+                const m = line.match(/^(.+?)\s*->\s*(.+)$/);
+                if (m) pairs.push({ from: m[1].trim(), to: m[2].trim() });
+            });
+            return pairs;
+        };
+
+        EmailEditor.applyReplacementsToPreview = function(mapping) {
+            // Remove marks to avoid replacing inside <mark>
+            this.clearSpamMarks(this.nodes.emailPreview);
+
+            // Collect text nodes
+            const walker = document.createTreeWalker(this.nodes.emailPreview, NodeFilter.SHOW_TEXT, {
+                acceptNode: (node) => {
+                    if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+                    const parent = node.parentElement;
+                    if (!parent) return NodeFilter.FILTER_REJECT;
+                    const tag = parent.tagName;
+                    if (tag === 'SCRIPT' || tag === 'STYLE') return NodeFilter.FILTER_REJECT;
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            });
+            const nodes = [];
+            let n;
+            while ((n = walker.nextNode())) nodes.push(n);
+
+            const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            let count = 0;
+            nodes.forEach(node => {
+                let text = node.nodeValue;
+                mapping.forEach(({ from, to }) => {
+                    if (!from || typeof to !== 'string') return;
+                    // Word-boundary or phrase-safe replace: avoid inside tags (text nodes only) and inside other words
+                    const pattern = new RegExp(`\\b${escapeRegex(from)}\\b`, 'gi');
+                    const before = text;
+                    text = text.replace(pattern, () => {
+                        count++;
+                        return to;
+                    });
+                    // If no boundary match, try literal phrase replace (spaces/punct handled) but still case-insensitive
+                    if (before === text) {
+                        const phrase = new RegExp(escapeRegex(from), 'gi');
+                        text = text.replace(phrase, () => {
+                            count++;
+                            return to;
+                        });
+                    }
+                });
+                node.nodeValue = text;
+            });
+
+            // Re-apply spam highlights post-change
+            this.highlightSpamInPreview();
+            return count;
+        };
+
+        EmailEditor.escapeHtml = function(s) {
+            return String(s).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
         };
 
         EmailEditor.init();
