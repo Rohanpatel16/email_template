@@ -1266,15 +1266,36 @@
                     throw new Error('No valid replacements returned');
                 }
 
-                const applied = this.applyReplacementsToPreview(mapping);
+                // Filter mappings to only those that actually appear in the current preview text
+                const previewText = (this.nodes.emailPreview.textContent || '');
+                const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const toFlexibleSpace = (s) => s.replace(/\s+/g, '\\s+');
+                const toQuoteVariants = (s) => [s, s.replace(/'/g, '’'), s.replace(/’/g, "'")];
+                const appearsInPreview = (term) => {
+                    for (const variant of toQuoteVariants(term)) {
+                        const re = new RegExp(toFlexibleSpace(escapeRegex(variant)), 'i');
+                        if (re.test(previewText)) return true;
+                    }
+                    return false;
+                };
+
+                const present = mapping.filter(m => m && typeof m.from === 'string' && appearsInPreview(m.from));
+                const skipped = mapping.filter(m => m && typeof m.from === 'string' && !appearsInPreview(m.from));
+
+                const applied = present.length ? this.applyReplacementsToPreview(present) : 0;
                 if (applied === 0) {
-                    this.showAIResponse('No occurrences found to replace.');
+                    const msg = skipped.length
+                        ? 'No occurrences found to replace. The following were not found in your email:<br>' +
+                          skipped.map(m => `${this.escapeHtml(m.from)}`).join('<br>')
+                        : 'No occurrences found to replace.';
+                    this.showAIResponse(msg);
                 } else {
                     // Sync preview -> source, re-highlight, and show summary
                     this.updateSourceFromPreview();
                     this.showAIResponse(
                         `Applied ${applied} replacement${applied === 1 ? '' : 's'}:<br>` +
-                        mapping.map(m => `${this.escapeHtml(m.from)} → <b>${this.escapeHtml(m.to)}</b>`).join('<br>')
+                        present.map(m => `${this.escapeHtml(m.from)} → <b>${this.escapeHtml(m.to)}</b>`).join('<br>') +
+                        (skipped.length ? '<hr class="my-2"><span class="text-slate-500">Skipped (not found):</span><br>' + skipped.map(m => `${this.escapeHtml(m.from)}`).join('<br>') : '')
                     );
                     this.showNotification('Spam words rewritten');
                 }
