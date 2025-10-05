@@ -437,6 +437,22 @@
         const EmailEditor = {
             nodes: {},
             state: { savedSelection: null },
+            aiReady() {
+                if (!navigator.onLine) {
+                    this.showAIError('You are offline. Check your internet connection.');
+                    return false;
+                }
+                if (!window.puter || !puter.ai || typeof puter.ai.chat !== 'function') {
+                    this.showAIError('AI service is unavailable. Ensure the Puter script loaded.');
+                    return false;
+                }
+                const aiModel = localStorage.getItem('ai-model') || 'claude-sonnet-4';
+                if (!aiModel) {
+                    this.showAIError('No AI model selected. Pick one in Settings.');
+                    return false;
+                }
+                return true;
+            },
 
             init() {
                 this.queryNodes();
@@ -761,6 +777,7 @@
                     return;
                 }
 
+                if (!this.aiReady()) return;
                 this.showAILoading();
                 try {
                     const aiModel = localStorage.getItem('ai-model') || 'claude-sonnet-4';
@@ -788,6 +805,7 @@
                     return;
                 }
 
+                if (!this.aiReady()) return;
                 this.showAILoading();
                 try {
                     const aiModel = localStorage.getItem('ai-model') || 'claude-sonnet-4';
@@ -818,6 +836,7 @@
                 const tone = prompt('What tone would you like? (e.g., professional, friendly, urgent, casual):');
                 if (!tone) return;
 
+                if (!this.aiReady()) return;
                 this.showAILoading();
                 try {
                     const aiModel = localStorage.getItem('ai-model') || 'claude-sonnet-4';
@@ -832,7 +851,8 @@
                     }
                 } catch (error) {
                     console.error('AI Tone Adjustment Error:', error);
-                    this.showAIError('Failed to adjust tone. Please check your internet connection and try again.');
+                    const msg = (error && (error.message || error.error || error.code)) ? `Failed to adjust tone: ${error.message || error.error || error.code}` : 'Failed to adjust tone. Please check your internet connection and try again.';
+                    this.showAIError(msg);
                 }
             },
 
@@ -843,6 +863,7 @@
                     return;
                 }
 
+                if (!this.aiReady()) return;
                 this.showAILoading();
                 try {
                     const aiModel = localStorage.getItem('ai-model') || 'claude-sonnet-4';
