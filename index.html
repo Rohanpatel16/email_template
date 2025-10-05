@@ -1292,7 +1292,16 @@
                     this.showAIResponse(msg);
                 }
 
-                const applied = present.length ? this.applyReplacementsToPreview(present) : 0;
+                let applied = present.length ? this.applyReplacementsToPreview(present) : 0;
+                if (applied === 0) {
+                    // Final fallback: attempt replacements directly on source HTML (DOM-walk to avoid attributes)
+                    const appliedToSource = this.applyReplacementsToSourceHtml(mapping);
+                    if (appliedToSource > 0) {
+                        // Source updated; trigger input pipeline to re-render preview/highlights
+                        this.nodes.htmlInput.dispatchEvent(new Event('input', { bubbles: true }));
+                        applied = appliedToSource;
+                    }
+                }
                 if (applied === 0) {
                     const msg = skipped.length
                         ? 'No occurrences found to replace. The following were not found in your email:<br>' +
@@ -1405,6 +1414,65 @@
 
             // Re-apply spam highlights post-change
             this.highlightSpamInPreview();
+            return count;
+        };
+
+        // Apply replacements by parsing source HTML and updating only text nodes
+        EmailEditor.applyReplacementsToSourceHtml = function(mapping) {
+            const html = this.nodes.htmlInput.value || '';
+            if (!html || !Array.isArray(mapping) || mapping.length === 0) return 0;
+
+            const container = document.createElement('div');
+            container.innerHTML = html;
+
+            const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const toQuoteVariants = (s) => [s, s.replace(/'/g, '’'), s.replace(/’/g, "'")];
+            const toFlexibleSpace = (s) => s.replace(/\s+/g, '\\s+');
+            const isWordLike = (s) => /^(?:[\p{L}\p{N}_]+)$/u.test(s);
+
+            const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+                acceptNode: (node) => {
+                    if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+                    const parent = node.parentElement;
+                    if (!parent) return NodeFilter.FILTER_REJECT;
+                    const tag = parent.tagName;
+                    if (tag === 'SCRIPT' || tag === 'STYLE') return NodeFilter.FILTER_REJECT;
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            });
+            const nodes = [];
+            let n;
+            while ((n = walker.nextNode())) nodes.push(n);
+
+            let count = 0;
+            nodes.forEach(node => {
+                let text = node.nodeValue;
+                mapping.forEach(({ from, to }) => {
+                    if (!from || typeof to !== 'string') return;
+                    const candidates = toQuoteVariants(from);
+                    let replacedThisTerm = false;
+                    for (const candidate of candidates) {
+                        const beforeCandidate = text;
+                        if (isWordLike(candidate)) {
+                            const pat = new RegExp(`\\b${escapeRegex(candidate)}\\b`, 'gi');
+                            text = text.replace(pat, () => { count++; replacedThisTerm = true; return to; });
+                        } else {
+                            const pat = new RegExp(toFlexibleSpace(escapeRegex(candidate)), 'gi');
+                            text = text.replace(pat, () => { count++; replacedThisTerm = true; return to; });
+                        }
+                        if (text !== beforeCandidate) break;
+                    }
+                    if (!replacedThisTerm) {
+                        const fallback = new RegExp(escapeRegex(from), 'gi');
+                        text = text.replace(fallback, () => { count++; return to; });
+                    }
+                });
+                node.nodeValue = text;
+            });
+
+            if (count > 0) {
+                this.nodes.htmlInput.value = container.innerHTML;
+            }
             return count;
         };
 
