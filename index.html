@@ -1266,21 +1266,31 @@
                     throw new Error('No valid replacements returned');
                 }
 
-                // Filter mappings to only those that actually appear in the current preview text
+                // Filter mappings to only those that actually appear in the current preview (text) OR source (HTML)
                 const previewText = (this.nodes.emailPreview.textContent || '');
+                const sourceHtml = (this.nodes.htmlInput.value || '');
                 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 const toFlexibleSpace = (s) => s.replace(/\s+/g, '\\s+');
                 const toQuoteVariants = (s) => [s, s.replace(/'/g, '’'), s.replace(/’/g, "'")];
                 const appearsInPreview = (term) => {
                     for (const variant of toQuoteVariants(term)) {
                         const re = new RegExp(toFlexibleSpace(escapeRegex(variant)), 'i');
-                        if (re.test(previewText)) return true;
+                        if (re.test(previewText) || re.test(sourceHtml)) return true;
                     }
                     return false;
                 };
 
                 const present = mapping.filter(m => m && typeof m.from === 'string' && appearsInPreview(m.from));
                 const skipped = mapping.filter(m => m && typeof m.from === 'string' && !appearsInPreview(m.from));
+
+                // Show a quick pre-scan summary so users know what's about to change
+                if (present.length === 0) {
+                    const msg = skipped.length
+                        ? 'No matches detected in your email. Not found:<br>' + skipped.map(m => `${this.escapeHtml(m.from)}`).join('<br>')
+                        : 'No matches detected in your email.';
+                    // Show but continue to apply (will just say 0 applied)
+                    this.showAIResponse(msg);
+                }
 
                 const applied = present.length ? this.applyReplacementsToPreview(present) : 0;
                 if (applied === 0) {
