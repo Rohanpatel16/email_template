@@ -191,6 +191,9 @@
                         <button id="load-template-btn" class="text-sm font-semibold text-purple-600 hover:text-purple-700 transition-colors">
                             <i class="fas fa-folder-open mr-1"></i> Load Template
                         </button>
+                        <a href="templates.html" id="manage-templates-btn" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors">
+                            <i class="fas fa-database mr-1"></i> Templates Library
+                        </a>
                         <button id="clear-all-btn" class="text-sm font-semibold text-red-600 hover:text-red-700 transition-colors">
                             <i class="fas fa-trash mr-1"></i> Clear All
                         </button>
@@ -440,6 +443,13 @@
         const EmailEditor = {
             nodes: {},
             state: { savedSelection: null },
+            defaultPromptTemplates: {
+                optimize: `{systemPrompt}\n\nOptimize this email content for better engagement and deliverability. Make it more professional and compelling while maintaining the original intent:\n\n{content}`,
+                suggest: `{systemPrompt}\n\nAnalyze this email content and provide specific suggestions for improvement. Focus on:\n1. Subject line recommendations\n2. Content structure improvements\n3. Call-to-action optimization\n4. Spam avoidance tips\n\nContent: {content}`,
+                tone: `{systemPrompt}\n\nRewrite this email content to have a {tone} tone while maintaining the same message and structure:\n\n{content}`,
+                subject: `{systemPrompt}\n\nGenerate 5 compelling subject lines for this email content. Make them engaging and spam-filter friendly:\n\n{content}`,
+                rewrite: `{systemPrompt}\n\nYou will receive a list of exact words/phrases and an email HTML.\nReturn ONLY a JSON array of objects with shape: [{"from":"...","to":"..."}].\nRules:\n- Propose safe, natural, non-spammy replacements.\n- Replace ONLY the provided words/phrases when they appear as text; do NOT change structure, HTML tags, links, or variables like {{name}}.\n- Keep case and punctuation sensible; if a phrase is part of a larger word, do not replace.\n\nTERMS:\n{terms}\n\nEMAIL_HTML:\n{content}`
+            },
             aiReady() {
                 if (!navigator.onLine) {
                     this.showAIError('You are offline. Check your internet connection.');
@@ -455,6 +465,20 @@
                     return false;
                 }
                 return true;
+            },
+
+            getPromptTemplate(key) {
+                const stored = localStorage.getItem(`prompt-${key}`);
+                if (stored && stored.trim()) return stored;
+                return this.defaultPromptTemplates[key] || '';
+            },
+
+            renderPrompt(template, variables) {
+                if (!template) return '';
+                return template.replace(/\{(\w+)\}/g, (m, k) => {
+                    const val = Object.prototype.hasOwnProperty.call(variables, k) ? variables[k] : '';
+                    return val == null ? '' : String(val);
+                });
             },
 
             extractAIText(response) {
@@ -831,7 +855,8 @@
                 try {
                     const aiModel = localStorage.getItem('ai-model') || 'claude-sonnet-4';
                     const systemPrompt = localStorage.getItem('system-prompt') || '';
-                    const fullPrompt = systemPrompt ? `${systemPrompt}\n\nOptimize this email content for better engagement and deliverability. Make it more professional and compelling while maintaining the original intent:\n\n${content}` : `Optimize this email content for better engagement and deliverability. Make it more professional and compelling while maintaining the original intent:\n\n${content}`;
+                    const tpl = this.getPromptTemplate('optimize');
+                    const fullPrompt = this.renderPrompt(tpl, { systemPrompt, content });
                     const response = await puter.ai.chat(
                         fullPrompt,
                         { model: aiModel }
@@ -857,7 +882,8 @@
                 try {
                     const aiModel = localStorage.getItem('ai-model') || 'claude-sonnet-4';
                     const systemPrompt = localStorage.getItem('system-prompt') || '';
-                    const fullPrompt = systemPrompt ? `${systemPrompt}\n\nAnalyze this email content and provide specific suggestions for improvement. Focus on:\n1. Subject line recommendations\n2. Content structure improvements\n3. Call-to-action optimization\n4. Spam avoidance tips\n\nContent: ${content}` : `Analyze this email content and provide specific suggestions for improvement. Focus on:\n1. Subject line recommendations\n2. Content structure improvements\n3. Call-to-action optimization\n4. Spam avoidance tips\n\nContent: ${content}`;
+                    const tpl = this.getPromptTemplate('suggest');
+                    const fullPrompt = this.renderPrompt(tpl, { systemPrompt, content });
                     const response = await puter.ai.chat(
                         fullPrompt,
                         { model: aiModel }
@@ -885,10 +911,10 @@
                 this.showAILoading();
                 try {
                     const aiModel = localStorage.getItem('ai-model') || 'claude-sonnet-4';
-                    const response = await puter.ai.chat(
-                        `Rewrite this email content to have a ${tone} tone while maintaining the same message and structure:\n\n${content}`,
-                        { model: aiModel }
-                    );
+                    const systemPrompt = localStorage.getItem('system-prompt') || '';
+                    const tpl = this.getPromptTemplate('tone');
+                    const fullPrompt = this.renderPrompt(tpl, { systemPrompt, content, tone });
+                    const response = await puter.ai.chat(fullPrompt, { model: aiModel });
                     const text = this.extractAIText(response);
                     if (!text) throw new Error('Invalid/unknown AI response format');
                     this.showAIResponse(text);
@@ -910,10 +936,10 @@
                 this.showAILoading();
                 try {
                     const aiModel = localStorage.getItem('ai-model') || 'claude-sonnet-4';
-                    const response = await puter.ai.chat(
-                        `Generate 5 compelling subject lines for this email content. Make them engaging and spam-filter friendly:\n\n${content}`,
-                        { model: aiModel }
-                    );
+                    const systemPrompt = localStorage.getItem('system-prompt') || '';
+                    const tpl = this.getPromptTemplate('subject');
+                    const fullPrompt = this.renderPrompt(tpl, { systemPrompt, content });
+                    const response = await puter.ai.chat(fullPrompt, { model: aiModel });
                     const text = this.extractAIText(response);
                     if (!text) throw new Error('Invalid/unknown AI response format');
                     this.showAIResponse(text);
@@ -1031,6 +1057,23 @@
 
                     this.nodes.htmlInput.dispatchEvent(new Event('input', { bubbles: true }));
                     this.showNotification('Previous work restored');
+                }
+
+                // If arriving from templates.html with a selection, load by name
+                const toLoad = localStorage.getItem('template-to-load');
+                if (toLoad) {
+                    localStorage.removeItem('template-to-load');
+                    try {
+                        const savedTemplates = JSON.parse(localStorage.getItem('emailTemplates') || '[]');
+                        const t = savedTemplates.find(x => x && x.name === toLoad);
+                        if (t) {
+                            this.nodes.htmlInput.value = t.html || '';
+                            this.nodes.variablesContainer.innerHTML = '';
+                            (t.variables || []).forEach(([name, value]) => this.addVariableRow(name, value));
+                            this.nodes.htmlInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            this.showNotification(`Loaded template: ${toLoad}`);
+                        }
+                    } catch(_) {}
                 }
             },
 
@@ -1244,22 +1287,10 @@
             this.showAILoading();
             try {
                 const aiModel = localStorage.getItem('ai-model') || 'claude-sonnet-4';
-                const prompt = [
-                    'You will receive a list of exact words/phrases and an email HTML.',
-                    'Return ONLY a JSON array of objects with shape: [{"from":"...","to":"..."}].',
-                    'Rules:',
-                    '- Propose safe, natural, non-spammy replacements.',
-                    '- Replace ONLY the provided words/phrases when they appear as text; do NOT change structure, HTML tags, links, or variables like {{name}}.',
-                    '- Keep case and punctuation sensible; if a phrase is part of a larger word, do not replace.',
-                    '',
-                    'TERMS:',
-                    JSON.stringify(terms),
-                    '',
-                    'EMAIL_HTML:',
-                    content
-                ].join('\n');
-
-                const response = await puter.ai.chat(prompt, { model: aiModel });
+                const systemPrompt = localStorage.getItem('system-prompt') || '';
+                const tpl = this.getPromptTemplate('rewrite');
+                const fullPrompt = this.renderPrompt(tpl, { systemPrompt, content, terms: JSON.stringify(terms) });
+                const response = await puter.ai.chat(fullPrompt, { model: aiModel });
                 const text = this.extractAIText(response) || '';
                 const mapping = this.parseReplacementMapping(text);
                 if (!Array.isArray(mapping) || mapping.length === 0) {

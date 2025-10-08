@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -40,9 +40,14 @@
             <h1 class="text-3xl font-bold text-slate-900">
                 <i class="fas fa-cog mr-2"></i> Settings
             </h1>
-            <a href="index.html" class="btn btn-secondary">
-                <i class="fas fa-arrow-left mr-2"></i> Back to Editor
-            </a>
+            <div class="flex gap-2">
+                <a href="index.html" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to Editor
+                </a>
+                <a href="templates.html" class="btn btn-ghost">
+                    <i class="fas fa-database mr-2"></i> Templates Library
+                </a>
+            </div>
         </div>
         <!-- AI Configuration Section -->
         <div class="settings-section">
@@ -123,6 +128,65 @@
                 <input type="file" id="import-file" accept=".json" style="display: none;">
             </div>
         </div>
+        
+        <!-- AI Prompt Templates Section -->
+        <div class="settings-section">
+            <h2><i class="fas fa-file-code mr-2"></i> AI Prompt Templates</h2>
+            <p class="text-sm text-slate-500 mb-3">Use placeholders like {systemPrompt}, {content}, {tone}, {terms}. These will be replaced before sending to AI.</p>
+            <details class="mb-4">
+                <summary class="cursor-pointer text-slate-700 font-medium">More info about placeholders</summary>
+                <div class="mt-2 text-sm text-slate-600 space-y-2 bg-slate-50 border border-slate-200 rounded-lg p-3">
+                    <div>
+                        <span class="font-semibold text-slate-800">{systemPrompt}</span> – The global system instruction saved in AI Configuration. Sets the assistant's role and style.
+                    </div>
+                    <div>
+                        <span class="font-semibold text-slate-800">{content}</span> – The current email HTML from the left editor. Passed as-is, including tags.
+                    </div>
+                    <div>
+                        <span class="font-semibold text-slate-800">{tone}</span> – The tone you enter when using “Adjust Tone” (e.g., professional, friendly).
+                    </div>
+                    <div>
+                        <span class="font-semibold text-slate-800">{terms}</span> – For “Rewrite Spam Words”, the comma-separated words/phrases you choose, provided to AI as JSON (e.g., ["free", "limited time"]).
+                    </div>
+                    <div class="pt-2 border-t border-slate-200">
+                        <span class="font-semibold text-slate-800">Tips</span>
+                        <ul class="list-disc pl-5 mt-1 space-y-1">
+                            <li>You can reorder or wrap placeholders with additional instructions.</li>
+                            <li>Keep structure and any required output format (e.g., JSON) in your template.</li>
+                            <li>If a placeholder is missing at runtime, it will be replaced with an empty string.</li>
+                        </ul>
+                    </div>
+                </div>
+            </details>
+            <div class="form-group">
+                <label class="form-label">Optimize Content Template</label>
+                <textarea id="prompt-optimize" class="form-input font-mono text-sm" rows="5" placeholder="Enter optimize prompt template..."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Suggestions Template</label>
+                <textarea id="prompt-suggest" class="form-input font-mono text-sm" rows="7" placeholder="Enter suggestions prompt template..."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Adjust Tone Template</label>
+                <textarea id="prompt-tone" class="form-input font-mono text-sm" rows="5" placeholder="Enter tone prompt template..."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Generate Subject Template</label>
+                <textarea id="prompt-subject" class="form-input font-mono text-sm" rows="5" placeholder="Enter subject prompt template..."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Rewrite Spam Words Template</label>
+                <textarea id="prompt-rewrite" class="form-input font-mono text-sm" rows="10" placeholder="Enter rewrite spam words template..."></textarea>
+            </div>
+            <div class="flex gap-2">
+                <button id="save-prompt-templates" class="btn btn-primary">
+                    <i class="fas fa-save mr-2"></i> Save Prompt Templates
+                </button>
+                <button id="reset-prompt-templates" class="btn btn-secondary">
+                    <i class="fas fa-undo mr-2"></i> Reset to Defaults
+                </button>
+            </div>
+        </div>
         <!-- Email Signature Section -->
         <div class="settings-section">
             <h2><i class="fas fa-signature mr-2"></i> Email Signature</h2>
@@ -184,10 +248,21 @@
                 const signature = localStorage.getItem('email-signature') || '';
                 document.getElementById('signature-html').value = signature;
                 this.updateSignaturePreview();
+
+                // Load AI prompt templates (with defaults)
+                const defaults = this.getDefaultPromptTemplates();
+                document.getElementById('prompt-optimize').value = localStorage.getItem('prompt-optimize') || defaults.optimize;
+                document.getElementById('prompt-suggest').value = localStorage.getItem('prompt-suggest') || defaults.suggest;
+                document.getElementById('prompt-tone').value = localStorage.getItem('prompt-tone') || defaults.tone;
+                document.getElementById('prompt-subject').value = localStorage.getItem('prompt-subject') || defaults.subject;
+                document.getElementById('prompt-rewrite').value = localStorage.getItem('prompt-rewrite') || defaults.rewrite;
             },
             bindEvents() {
                 // AI Configuration
                 document.getElementById('save-ai-config').addEventListener('click', () => this.saveAIConfig());
+                // Prompt Templates
+                document.getElementById('save-prompt-templates').addEventListener('click', () => this.savePromptTemplates());
+                document.getElementById('reset-prompt-templates').addEventListener('click', () => this.resetPromptTemplates());
 
                 // Spam Words Management
                 document.getElementById('add-spam-word-btn').addEventListener('click', () => this.addCustomSpamWord());
@@ -203,6 +278,39 @@
 
                 // Reset Settings
                 document.getElementById('reset-all-settings').addEventListener('click', () => this.resetAllSettings());
+            },
+            getDefaultPromptTemplates() {
+                return {
+                    optimize: `{systemPrompt}\n\nOptimize this email content for better engagement and deliverability. Make it more professional and compelling while maintaining the original intent:\n\n{content}`,
+                    suggest: `{systemPrompt}\n\nAnalyze this email content and provide specific suggestions for improvement. Focus on:\n1. Subject line recommendations\n2. Content structure improvements\n3. Call-to-action optimization\n4. Spam avoidance tips\n\nContent: {content}`,
+                    tone: `{systemPrompt}\n\nRewrite this email content to have a {tone} tone while maintaining the same message and structure:\n\n{content}`,
+                    subject: `{systemPrompt}\n\nGenerate 5 compelling subject lines for this email content. Make them engaging and spam-filter friendly:\n\n{content}`,
+                    rewrite: `{systemPrompt}\n\nYou will receive a list of exact words/phrases and an email HTML.\nReturn ONLY a JSON array of objects with shape: [{"from":"...","to":"..."}].\nRules:\n- Propose safe, natural, non-spammy replacements.\n- Replace ONLY the provided words/phrases when they appear as text; do NOT change structure, HTML tags, links, or variables like {{name}}.\n- Keep case and punctuation sensible; if a phrase is part of a larger word, do not replace.\n\nTERMS:\n{terms}\n\nEMAIL_HTML:\n{content}`
+                };
+            },
+            savePromptTemplates() {
+                const ids = ['prompt-optimize','prompt-suggest','prompt-tone','prompt-subject','prompt-rewrite'];
+                ids.forEach(id => {
+                    const val = document.getElementById(id).value;
+                    if (val && val.trim()) localStorage.setItem(id, val);
+                });
+                this.showNotification('Prompt templates saved successfully!');
+            },
+            resetPromptTemplates() {
+                if (!confirm('Reset all AI prompt templates to the original defaults?')) return;
+                const defaults = this.getDefaultPromptTemplates();
+                document.getElementById('prompt-optimize').value = defaults.optimize;
+                document.getElementById('prompt-suggest').value = defaults.suggest;
+                document.getElementById('prompt-tone').value = defaults.tone;
+                document.getElementById('prompt-subject').value = defaults.subject;
+                document.getElementById('prompt-rewrite').value = defaults.rewrite;
+                // Persist defaults immediately
+                localStorage.setItem('prompt-optimize', defaults.optimize);
+                localStorage.setItem('prompt-suggest', defaults.suggest);
+                localStorage.setItem('prompt-tone', defaults.tone);
+                localStorage.setItem('prompt-subject', defaults.subject);
+                localStorage.setItem('prompt-rewrite', defaults.rewrite);
+                this.showNotification('Prompt templates reset to defaults!');
             },
 
             saveAIConfig() {
