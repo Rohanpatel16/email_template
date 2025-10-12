@@ -6,7 +6,17 @@
     <title>Professional Email Template Previewer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script src="https://js.puter.com/v2/"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "@google/generative-ai": "https://esm.sh/@google/generative-ai@0.21.0"
+            }
+        }
+    </script>
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+        window.GoogleGenerativeAI = GoogleGenerativeAI;
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
@@ -168,6 +178,94 @@
         #spam-checker--aside .text-great { @apply text-green-600 font-semibold; }
         #spam-checker--aside .text-okay { @apply text-blue-600 font-semibold; }
         #spam-checker--aside .text-poor { @apply text-red-600 font-semibold; }
+        
+        /* AI Response Styling */
+        .ai-action-btn {
+            @apply px-3 py-1.5 text-xs font-medium rounded-md transition-colors duration-150;
+        }
+        .ai-btn-copy {
+            @apply bg-slate-200 hover:bg-slate-300 text-slate-700;
+        }
+        .ai-btn-apply {
+            @apply bg-green-600 hover:bg-green-700 text-white;
+        }
+        .ai-btn-use {
+            @apply bg-blue-600 hover:bg-blue-700 text-white;
+        }
+        .ai-btn-copy-small {
+            @apply bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1;
+        }
+        
+        .ai-content-card {
+            @apply bg-white border border-gray-200 rounded-lg p-4 text-sm text-gray-700 leading-relaxed;
+        }
+        
+        .ai-subject-card {
+            @apply bg-white border border-gray-200 rounded-lg p-3 mb-3 hover:border-blue-300 transition-colors;
+        }
+        .ai-subject-header {
+            @apply flex items-start justify-between mb-2;
+        }
+        .ai-subject-number {
+            @apply font-semibold text-gray-500 mr-2 flex-shrink-0;
+        }
+        .ai-subject-text {
+            @apply flex-grow text-gray-800 font-medium;
+        }
+        .ai-subject-meta {
+            @apply text-xs text-gray-500 flex-shrink-0 ml-2;
+        }
+        .ai-subject-actions {
+            @apply flex items-center gap-2;
+        }
+        .ai-spam-indicator {
+            @apply ml-1 text-xs;
+        }
+        
+        .ai-suggestions-content {
+            @apply space-y-3;
+        }
+        .ai-suggestions-content h4 {
+            @apply text-sm font-semibold text-gray-800 mt-3 mb-2 flex items-center;
+        }
+        .ai-suggestions-content ul {
+            @apply ml-4 space-y-1;
+        }
+        .ai-suggestions-content li {
+            @apply text-sm text-gray-700;
+        }
+        
+        .ai-response-optimize .ai-content-card {
+            @apply border-green-200 bg-green-50;
+        }
+        .ai-response-suggestions .ai-content-card {
+            @apply border-blue-200 bg-blue-50;
+        }
+        .ai-response-tone .ai-content-card {
+            @apply border-purple-200 bg-purple-50;
+        }
+        .ai-response-subjects .ai-subject-card {
+            @apply border-orange-200 bg-orange-50;
+        }
+        
+        .ai-suggestions-content ul {
+            @apply list-disc ml-6 space-y-2;
+        }
+        .ai-suggestions-content li {
+            @apply text-sm text-gray-700 leading-relaxed;
+        }
+        .ai-suggestions-content strong {
+            @apply font-semibold text-gray-900;
+        }
+        .suggestion-section {
+            @apply bg-white border border-blue-100 rounded-lg p-4;
+        }
+        .ai-content-card ul {
+            @apply list-disc ml-6 space-y-1;
+        }
+        .ai-content-card ol {
+            @apply list-decimal ml-6 space-y-1;
+        }
     </style>
 </head>
 <body class="text-slate-800">
@@ -299,6 +397,18 @@
                             <p class="text-sm text-slate-500">To: <span id="recipient-email">recipient@example.com</span></p>
                         </div>
                     </div>
+                    <!-- Subject Line Input -->
+                    <div class="mb-4">
+                        <label class="text-sm font-medium text-slate-700 mb-2 block">Subject Line:</label>
+                        <input type="text" id="subject-line-input" 
+                               class="w-full p-3 bg-slate-900 text-white border border-slate-700 rounded-lg font-medium text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" 
+                               placeholder="Enter your email subject line..."
+                               value="Regarding AI Roles at {{company_name}}">
+                        <div id="subject-line-preview" class="mt-2 text-sm text-slate-600 bg-slate-100 p-2 rounded border">
+                            <span class="font-medium">Preview:</span> <span id="subject-preview-text">Regarding AI Roles at {{company_name}}</span>
+                        </div>
+                    </div>
+                    
                     <div class="mt-4 border-b border-slate-200 pb-4">
                         <h3 class="text-xl font-bold text-slate-800">Regarding AI Roles at <span id="preview-company-name">Your Company</span></h3>
                     </div>
@@ -444,24 +554,24 @@
             nodes: {},
             state: { savedSelection: null },
             defaultPromptTemplates: {
-                optimize: `{systemPrompt}\n\nOptimize this email content for better engagement and deliverability. Make it more professional and compelling while maintaining the original intent:\n\n{content}`,
-                suggest: `{systemPrompt}\n\nAnalyze this email content and provide specific suggestions for improvement. Focus on:\n1. Subject line recommendations\n2. Content structure improvements\n3. Call-to-action optimization\n4. Spam avoidance tips\n\nContent: {content}`,
-                tone: `{systemPrompt}\n\nRewrite this email content to have a {tone} tone while maintaining the same message and structure:\n\n{content}`,
-                subject: `{systemPrompt}\n\nGenerate 5 compelling subject lines for this email content. Make them engaging and spam-filter friendly:\n\n{content}`,
-                rewrite: `{systemPrompt}\n\nYou will receive a list of exact words/phrases and an email HTML.\nReturn ONLY a JSON array of objects with shape: [{"from":"...","to":"..."}].\nRules:\n- Propose safe, natural, non-spammy replacements.\n- Replace ONLY the provided words/phrases when they appear as text; do NOT change structure, HTML tags, links, or variables like {{name}}.\n- Keep case and punctuation sensible; if a phrase is part of a larger word, do not replace.\n\nTERMS:\n{terms}\n\nEMAIL_HTML:\n{content}`
+                optimize: `{systemPrompt}\n\nOptimize this email content for better engagement and deliverability. Make it more professional and compelling while maintaining the original intent.\n\nIMPORTANT: Keep your response concise (under 200 words). Focus on the most impactful improvements only.\n\nContent: {content}`,
+                suggest: `{systemPrompt}\n\nAnalyze this email content and provide specific suggestions for improvement. Focus on:\n1. Subject line recommendations\n2. Content structure improvements\n3. Call-to-action optimization\n4. Spam avoidance tips\n\nIMPORTANT: Keep your response concise (under 150 words). Provide only the most critical suggestions.\n\nContent: {content}`,
+                tone: `{systemPrompt}\n\nRewrite this email content to have a {tone} tone while maintaining the same message and structure.\n\nIMPORTANT: Keep your response concise. Return only the rewritten content without explanations.\n\nContent: {content}`,
+                subject: `{systemPrompt}\n\nGenerate 5 compelling subject lines for this email.\n\nCurrent Subject Template: {subjectLine}\nEmail Content: {content}\n\nIMPORTANT: Return only the 5 subject lines, one per line, without explanations or numbering. If the current subject uses variables like {{company_name}}, you can use similar variable patterns in your suggestions.`,
+                rewrite: `{systemPrompt}\n\nYou will receive a list of exact words/phrases and an email HTML.\nReturn ONLY a JSON array of objects with shape: [{"from":"...","to":"..."}].\n\nCRITICAL RULES:\n- NEVER return the same word as the replacement. Always provide a different, better alternative.\n- Propose safe, natural, non-spammy replacements that are clearly different from the original.\n- Replace ONLY the provided words/phrases when they appear as text; do NOT change structure, HTML tags, links, or variables like {{name}}.\n- Keep case and punctuation sensible; if a phrase is part of a larger word, do not replace.\n- If you cannot find a good replacement, omit that word from the response entirely.\n\nTERMS:\n{terms}\n\nEMAIL_HTML:\n{content}`
             },
             aiReady() {
                 if (!navigator.onLine) {
                     this.showAIError('You are offline. Check your internet connection.');
                     return false;
                 }
-                if (!window.puter || !puter.ai || typeof puter.ai.chat !== 'function') {
-                    this.showAIError('AI service is unavailable. Ensure the Puter script loaded.');
+                if (!window.GoogleGenerativeAI) {
+                    this.showAIError('Gemini AI library is not loaded. Please refresh the page.');
                     return false;
                 }
-                const aiModel = localStorage.getItem('ai-model') || 'claude-sonnet-4';
-                if (!aiModel) {
-                    this.showAIError('No AI model selected. Pick one in Settings.');
+                const apiKey = localStorage.getItem('gemini-api-key');
+                if (!apiKey || !apiKey.trim()) {
+                    this.showAIError('No Gemini API key found. Please add your API key in Settings.');
                     return false;
                 }
                 return true;
@@ -473,48 +583,47 @@
                 return this.defaultPromptTemplates[key] || '';
             },
 
+            initGeminiClient() {
+                const apiKey = localStorage.getItem('gemini-api-key');
+                if (!apiKey) throw new Error('No Gemini API key found');
+                
+                const genAI = new window.GoogleGenerativeAI(apiKey);
+                return genAI.getGenerativeModel({ 
+                    model: "gemini-2.5-flash-lite",
+                    generationConfig: {
+                        thinkingConfig: { thinkingBudget: 0 }
+                    }
+                });
+            },
+
             renderPrompt(template, variables) {
                 if (!template) return '';
-                return template.replace(/\{(\w+)\}/g, (m, k) => {
+                let result = template.replace(/\{(\w+)\}/g, (m, k) => {
                     const val = Object.prototype.hasOwnProperty.call(variables, k) ? variables[k] : '';
                     return val == null ? '' : String(val);
                 });
+                
+                // Add subjectLine support if not already provided
+                // Use raw subject line with variables for AI context
+                if (this.nodes.subjectLineInput && !variables.hasOwnProperty('subjectLine')) {
+                    result = result.replace(/\{subjectLine\}/g, this.nodes.subjectLineInput.value || '');
+                }
+                
+                return result;
             },
 
             extractAIText(response) {
                 try {
                     if (!response) return null;
-                    // puter.ai typical shape
-                    if (response.message && response.message.content) {
-                        const c = response.message.content;
-                        if (Array.isArray(c) && c[0] && (c[0].text || c[0].content || c[0].value)) {
-                            return c[0].text || c[0].content || c[0].value;
-                        }
-                        if (typeof c === 'string') return c;
+                    
+                    // Gemini response format
+                    if (response.response && response.response.text) {
+                        return response.response.text();
                     }
-                    // alt: direct string
+                    
+                    // Fallback for other formats
                     if (typeof response === 'string') return response;
-                    // alt: OpenAI-style
-                    if (response.choices && response.choices[0]) {
-                        const ch = response.choices[0];
-                        if (ch.message && typeof ch.message.content === 'string') return ch.message.content;
-                        if (typeof ch.text === 'string') return ch.text;
-                    }
-                    // alt: wrapped result
-                    if (response.result && response.result.message) {
-                        const m = response.result.message;
-                        if (typeof m.content === 'string') return m.content;
-                        if (Array.isArray(m.content) && m.content[0] && (m.content[0].text || m.content[0].content)) {
-                            return m.content[0].text || m.content[0].content;
-                        }
-                    }
-                    // alt: common fields
-                    if (response.content) {
-                        if (typeof response.content === 'string') return response.content;
-                        if (Array.isArray(response.content) && response.content[0]) {
-                            return response.content[0].text || response.content[0].content || null;
-                        }
-                    }
+                    
                     return null;
                 } catch (_) {
                     return null;
@@ -538,11 +647,38 @@
                     this.nodes.htmlInput.dispatchEvent(new Event('input', { bubbles: true }));
                 }
                 
+                // Initialize subject line preview
+                this.renderSubjectLine();
+                
                 // Check if signature should be inserted
                 if (localStorage.getItem('insert-signature-flag') === 'true') {
                     this.insertSignature();
                     localStorage.removeItem('insert-signature-flag');
                 }
+                
+                // Add event delegation for AI action buttons
+                document.addEventListener('click', (e) => {
+                    const btn = e.target.closest('[data-action]');
+                    if (!btn) return;
+                    
+                    const action = btn.dataset.action;
+                    const contentId = btn.dataset.contentId;
+                    const content = window.aiContentCache?.[contentId];
+                    
+                    if (!content) return;
+                    
+                    switch (action) {
+                        case 'copy':
+                            this.copyToClipboard(content);
+                            break;
+                        case 'apply':
+                            this.applyToEditor(content);
+                            break;
+                        case 'use':
+                            this.useSubject(content);
+                            break;
+                    }
+                });
                 
                 this.updateWordCount();
             },
@@ -553,6 +689,8 @@
                     addVariableBtn: document.getElementById('add-variable-btn'),
                     htmlInput: document.getElementById('spam-checker--textarea'),
                     emailPreview: document.getElementById('email-preview'),
+                    subjectLineInput: document.getElementById('subject-line-input'),
+                    subjectPreviewText: document.getElementById('subject-preview-text'),
                     recipientEmail: document.getElementById('recipient-email'),
                     previewCompanyName: document.getElementById('preview-company-name'),
                     copyHtmlBtn: document.getElementById('copy-html-btn'),
@@ -568,6 +706,10 @@
                 this.nodes.htmlInput.addEventListener('input', () => {
                     this.renderPreview();
                     this.updateWordCount();
+                    this.saveToLocalStorage();
+                });
+                this.nodes.subjectLineInput.addEventListener('input', () => {
+                    this.renderSubjectLine();
                     this.saveToLocalStorage();
                 });
                 this.nodes.emailPreview.addEventListener('input', () => this.updateSourceFromPreview());
@@ -647,11 +789,38 @@
                 this.nodes.recipientEmail.textContent = `${(variables.get('name') || 'recipient').split(' ')[0].toLowerCase()}@example.com`;
                 this.nodes.previewCompanyName.textContent = variables.get('company_name') || 'Your Company';
                 
+                // Render subject line preview with variable replacement
+                this.renderSubjectLine();
+                
                 const selection = this.saveSelection(this.nodes.emailPreview);
                 this.nodes.emailPreview.innerHTML = template;
                 // Apply spam highlights in the preview before restoring selection
                 this.highlightSpamInPreview();
                 this.restoreSelection(this.nodes.emailPreview, selection);
+            },
+
+            renderSubjectLine() {
+                if (!this.nodes.subjectLineInput) return;
+                
+                // Update the preview text with rendered variables
+                if (this.nodes.subjectPreviewText) {
+                    const renderedSubject = this.getRenderedSubjectLine();
+                    this.nodes.subjectPreviewText.textContent = renderedSubject;
+                }
+            },
+
+            getRenderedSubjectLine() {
+                if (!this.nodes.subjectLineInput) return '';
+                
+                let subjectLine = this.nodes.subjectLineInput.value;
+                const variables = this.getVariables();
+
+                variables.forEach((value, name) => {
+                    const regex = new RegExp(`{{${name}}}`, 'g');
+                    subjectLine = subjectLine.replace(regex, value);
+                });
+
+                return subjectLine;
             },
 
             updateSourceFromPreview() {
@@ -853,20 +1022,18 @@
                 if (!this.aiReady()) return;
                 this.showAILoading();
                 try {
-                    const aiModel = localStorage.getItem('ai-model') || 'claude-sonnet-4';
                     const systemPrompt = localStorage.getItem('system-prompt') || '';
                     const tpl = this.getPromptTemplate('optimize');
                     const fullPrompt = this.renderPrompt(tpl, { systemPrompt, content });
-                    const response = await puter.ai.chat(
-                        fullPrompt,
-                        { model: aiModel }
-                    );
-                    const text = this.extractAIText(response);
-                    if (!text) throw new Error('Invalid/unknown AI response format');
-                    this.showAIResponse(text);
+                    
+                    const model = this.initGeminiClient();
+                    const result = await model.generateContent(fullPrompt);
+                    const text = this.extractAIText(result);
+                    if (!text) throw new Error('Invalid Gemini response format');
+                    this.showAIResponse(text, 'optimize');
                 } catch (error) {
                     console.error('AI Optimization Error:', error);
-                    this.showAIError('Failed to optimize content. Please check your internet connection and try again.');
+                    this.showAIError('Failed to optimize content. Please check your API key and try again.');
                 }
             },
 
@@ -880,20 +1047,18 @@
                 if (!this.aiReady()) return;
                 this.showAILoading();
                 try {
-                    const aiModel = localStorage.getItem('ai-model') || 'claude-sonnet-4';
                     const systemPrompt = localStorage.getItem('system-prompt') || '';
                     const tpl = this.getPromptTemplate('suggest');
                     const fullPrompt = this.renderPrompt(tpl, { systemPrompt, content });
-                    const response = await puter.ai.chat(
-                        fullPrompt,
-                        { model: aiModel }
-                    );
-                    const text = this.extractAIText(response);
-                    if (!text) throw new Error('Invalid/unknown AI response format');
-                    this.showAIResponse(text);
+                    
+                    const model = this.initGeminiClient();
+                    const result = await model.generateContent(fullPrompt);
+                    const text = this.extractAIText(result);
+                    if (!text) throw new Error('Invalid Gemini response format');
+                    this.showAIResponse(text, 'suggest');
                 } catch (error) {
                     console.error('AI Suggestions Error:', error);
-                    this.showAIError('Failed to get suggestions. Please check your internet connection and try again.');
+                    this.showAIError('Failed to get suggestions. Please check your API key and try again.');
                 }
             },
 
@@ -910,17 +1075,18 @@
                 if (!this.aiReady()) return;
                 this.showAILoading();
                 try {
-                    const aiModel = localStorage.getItem('ai-model') || 'claude-sonnet-4';
                     const systemPrompt = localStorage.getItem('system-prompt') || '';
                     const tpl = this.getPromptTemplate('tone');
                     const fullPrompt = this.renderPrompt(tpl, { systemPrompt, content, tone });
-                    const response = await puter.ai.chat(fullPrompt, { model: aiModel });
-                    const text = this.extractAIText(response);
-                    if (!text) throw new Error('Invalid/unknown AI response format');
-                    this.showAIResponse(text);
+                    
+                    const model = this.initGeminiClient();
+                    const result = await model.generateContent(fullPrompt);
+                    const text = this.extractAIText(result);
+                    if (!text) throw new Error('Invalid Gemini response format');
+                    this.showAIResponse(text, 'tone');
                 } catch (error) {
                     console.error('AI Tone Adjustment Error:', error);
-                    const msg = (error && (error.message || error.error || error.code)) ? `Failed to adjust tone: ${error.message || error.error || error.code}` : 'Failed to adjust tone. Please check your internet connection and try again.';
+                    const msg = (error && (error.message || error.error || error.code)) ? `Failed to adjust tone: ${error.message || error.error || error.code}` : 'Failed to adjust tone. Please check your API key and try again.';
                     this.showAIError(msg);
                 }
             },
@@ -935,17 +1101,20 @@
                 if (!this.aiReady()) return;
                 this.showAILoading();
                 try {
-                    const aiModel = localStorage.getItem('ai-model') || 'claude-sonnet-4';
                     const systemPrompt = localStorage.getItem('system-prompt') || '';
+                    // Pass raw subject line with variables for AI context
+                    const currentSubject = this.nodes.subjectLineInput ? this.nodes.subjectLineInput.value : '';
                     const tpl = this.getPromptTemplate('subject');
-                    const fullPrompt = this.renderPrompt(tpl, { systemPrompt, content });
-                    const response = await puter.ai.chat(fullPrompt, { model: aiModel });
-                    const text = this.extractAIText(response);
-                    if (!text) throw new Error('Invalid/unknown AI response format');
-                    this.showAIResponse(text);
+                    const fullPrompt = this.renderPrompt(tpl, { systemPrompt, content, subjectLine: currentSubject });
+                    
+                    const model = this.initGeminiClient();
+                    const result = await model.generateContent(fullPrompt);
+                    const text = this.extractAIText(result);
+                    if (!text) throw new Error('Invalid Gemini response format');
+                    this.showAIResponse(text, 'subject');
                 } catch (error) {
                     console.error('AI Subject Generation Error:', error);
-                    this.showAIError('Failed to generate subject lines. Please check your internet connection and try again.');
+                    this.showAIError('Failed to generate subject lines. Please check your API key and try again.');
                 }
             },
 
@@ -954,9 +1123,20 @@
                 document.getElementById('ai-response').classList.add('hidden');
             },
 
-            showAIResponse(content) {
+            showAIResponse(content, type = 'general') {
+                const formatters = {
+                    optimize: this.formatOptimizeResponse,
+                    suggest: this.formatSuggestionsResponse,
+                    tone: this.formatToneResponse,
+                    subject: this.formatSubjectResponse,
+                    general: this.formatGeneralResponse
+                };
+                
+                const formatter = formatters[type] || formatters.general;
+                const formattedHTML = formatter.call(this, content);
+                
                 document.getElementById('ai-loading').classList.add('hidden');
-                document.getElementById('ai-content').innerHTML = content.replace(/\n/g, '<br>');
+                document.getElementById('ai-content').innerHTML = formattedHTML;
                 document.getElementById('ai-response').classList.remove('hidden');
             },
 
@@ -964,6 +1144,339 @@
                 document.getElementById('ai-loading').classList.add('hidden');
                 document.getElementById('ai-content').innerHTML = `<div class="text-red-600">${message}</div>`;
                 document.getElementById('ai-response').classList.remove('hidden');
+            },
+
+            // AI Response Formatters
+            formatOptimizeResponse(content) {
+                const optimizedContent = this.parseMarkdown(content);
+                const contentId = 'opt-' + Date.now();
+                
+                // Store content for copying
+                window.aiContentCache = window.aiContentCache || {};
+                window.aiContentCache[contentId] = content;
+                
+                return `
+                    <div class="ai-response-optimize">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-lg font-semibold text-green-800 flex items-center">
+                                <i class="fas fa-magic mr-2"></i>Optimized Content
+                            </h4>
+                            <div class="flex gap-2">
+                                <button data-action="copy" data-content-id="${contentId}" class="ai-action-btn ai-btn-copy">
+                                    <i class="fas fa-copy mr-1"></i>Copy
+                                </button>
+                                <button data-action="apply" data-content-id="${contentId}" class="ai-action-btn ai-btn-apply">
+                                    <i class="fas fa-check mr-1"></i>Apply to Editor
+                                </button>
+                            </div>
+                        </div>
+                        <div class="ai-content-card">
+                            ${optimizedContent}
+                        </div>
+                    </div>
+                `;
+            },
+
+            formatSuggestionsResponse(content) {
+                const sections = this.parseSuggestionsIntoSections(content);
+                const contentId = 'sug-' + Date.now();
+                window.aiContentCache = window.aiContentCache || {};
+                window.aiContentCache[contentId] = content;
+                
+                return `
+                    <div class="ai-response-suggestions">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-lg font-semibold text-blue-800 flex items-center">
+                                <i class="fas fa-lightbulb mr-2"></i>AI Suggestions
+                            </h4>
+                            <button data-action="copy" data-content-id="${contentId}" class="ai-action-btn ai-btn-copy">
+                                <i class="fas fa-copy mr-1"></i>Copy All
+                            </button>
+                        </div>
+                        <div class="ai-suggestions-content space-y-4">
+                            ${sections.map(section => `
+                                <div class="suggestion-section">
+                                    <h5 class="text-sm font-semibold text-blue-700 mb-2 flex items-center">
+                                        ${this.getSectionIcon(section.title)} ${section.title}
+                                    </h5>
+                                    <div class="ml-4">
+                                        ${this.parseMarkdown(section.content)}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            },
+
+            formatToneResponse(content) {
+                const adjustedContent = this.parseMarkdown(content);
+                const contentId = 'tone-' + Date.now();
+                window.aiContentCache = window.aiContentCache || {};
+                window.aiContentCache[contentId] = content;
+                
+                return `
+                    <div class="ai-response-tone">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-lg font-semibold text-purple-800 flex items-center">
+                                <i class="fas fa-palette mr-2"></i>Tone Adjusted
+                            </h4>
+                            <div class="flex gap-2">
+                                <button data-action="copy" data-content-id="${contentId}" class="ai-action-btn ai-btn-copy">
+                                    <i class="fas fa-copy mr-1"></i>Copy
+                                </button>
+                                <button data-action="apply" data-content-id="${contentId}" class="ai-action-btn ai-btn-apply">
+                                    <i class="fas fa-check mr-1"></i>Replace Content
+                                </button>
+                            </div>
+                        </div>
+                        <div class="ai-content-card">
+                            ${adjustedContent}
+                        </div>
+                    </div>
+                `;
+            },
+
+            formatSubjectResponse(content) {
+                const subjects = this.parseSubjectLines(content);
+                const contentId = 'subj-' + Date.now();
+                window.aiContentCache = window.aiContentCache || {};
+                window.aiContentCache[contentId] = subjects.join('\n');
+                
+                return `
+                    <div class="ai-response-subjects">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-lg font-semibold text-orange-800 flex items-center">
+                                <i class="fas fa-envelope mr-2"></i>Generated Subject Lines
+                            </h4>
+                            <button data-action="copy" data-content-id="${contentId}" class="ai-action-btn ai-btn-copy">
+                                <i class="fas fa-copy mr-1"></i>Copy All
+                            </button>
+                        </div>
+                        <div class="ai-subjects-list">
+                            ${subjects.map((subject, index) => {
+                                const subjectId = 'subj-' + Date.now() + '-' + index;
+                                window.aiContentCache[subjectId] = subject;
+                                return `
+                                    <div class="ai-subject-card">
+                                        <div class="ai-subject-header">
+                                            <span class="ai-subject-number">${index + 1}.</span>
+                                            <span class="ai-subject-text">${subject}</span>
+                                            <span class="ai-subject-meta">
+                                                ${subject.length} chars 
+                                                <span class="ai-spam-indicator">${this.getSpamIndicator(subject)}</span>
+                                            </span>
+                                        </div>
+                                        <div class="ai-subject-actions">
+                                            <button data-action="copy" data-content-id="${subjectId}" class="ai-action-btn ai-btn-copy-small">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                            <button data-action="use" data-content-id="${subjectId}" class="ai-action-btn ai-btn-use">
+                                                <i class="fas fa-check mr-1"></i>Use This
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            },
+
+            formatGeneralResponse(content) {
+                const parsedContent = this.parseMarkdown(content);
+                return `
+                    <div class="ai-response-general">
+                        <div class="ai-content-card">
+                            ${parsedContent}
+                        </div>
+                    </div>
+                `;
+            },
+
+            // Helper Methods for Formatters
+            parseMarkdown(text) {
+                if (!text) return '';
+                
+                // Split into lines for better processing
+                let lines = text.split('\n');
+                let result = [];
+                let inList = false;
+                let listItems = [];
+                
+                for (let i = 0; i < lines.length; i++) {
+                    let line = lines[i].trim();
+                    
+                    // Skip empty lines
+                    if (!line) {
+                        if (inList) {
+                            result.push('<ul class="list-disc ml-6 mb-3 space-y-1">' + listItems.join('') + '</ul>');
+                            listItems = [];
+                            inList = false;
+                        }
+                        continue;
+                    }
+                    
+                    // Headers (###, ##, #)
+                    if (line.startsWith('###')) {
+                        result.push(`<h4 class="text-md font-semibold text-gray-800 mt-4 mb-2">${line.substring(3).trim()}</h4>`);
+                    }
+                    else if (line.startsWith('##')) {
+                        result.push(`<h3 class="text-lg font-semibold text-gray-800 mt-4 mb-2">${line.substring(2).trim()}</h3>`);
+                    }
+                    else if (line.startsWith('#')) {
+                        result.push(`<h2 class="text-xl font-semibold text-gray-800 mt-4 mb-3">${line.substring(1).trim()}</h2>`);
+                    }
+                    // Numbered lists
+                    else if (/^\d+\./.test(line)) {
+                        let content = line.replace(/^\d+\.\s*/, '');
+                        listItems.push(`<li class="text-gray-700">${this.formatInlineMarkdown(content)}</li>`);
+                        inList = true;
+                    }
+                    // Bullet lists
+                    else if (line.startsWith('- ') || line.startsWith('* ')) {
+                        let content = line.substring(2);
+                        listItems.push(`<li class="text-gray-700">${this.formatInlineMarkdown(content)}</li>`);
+                        inList = true;
+                    }
+                    // Regular paragraphs
+                    else {
+                        if (inList) {
+                            result.push('<ul class="list-disc ml-6 mb-3 space-y-1">' + listItems.join('') + '</ul>');
+                            listItems = [];
+                            inList = false;
+                        }
+                        result.push(`<p class="mb-3 text-gray-700 leading-relaxed">${this.formatInlineMarkdown(line)}</p>`);
+                    }
+                }
+                
+                // Close any remaining list
+                if (inList) {
+                    result.push('<ul class="list-disc ml-6 mb-3 space-y-1">' + listItems.join('') + '</ul>');
+                }
+                
+                return result.join('');
+            },
+
+            formatInlineMarkdown(text) {
+                return text
+                    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>')
+                    .replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono">$1</code>');
+            },
+
+            parseSubjectLines(text) {
+                if (!text) return [];
+                
+                const lines = text.split('\n').filter(line => line.trim());
+                const subjects = [];
+                
+                lines.forEach(line => {
+                    const cleanLine = line.replace(/^\d+\.\s*/, '').replace(/^[-*]\s*/, '').trim();
+                    if (cleanLine && cleanLine.length > 5 && cleanLine.length < 100) {
+                        subjects.push(cleanLine);
+                    }
+                });
+                
+                return subjects.slice(0, 5); // Max 5 subjects
+            },
+
+            getSpamIndicator(subject) {
+                const spamWords = ['free', 'urgent', 'limited', 'act now', 'click here', 'winner', 'congratulations'];
+                const lowerSubject = subject.toLowerCase();
+                const spamCount = spamWords.filter(word => lowerSubject.includes(word)).length;
+                
+                if (spamCount === 0) return '🟢 Safe';
+                if (spamCount === 1) return '🟡 Caution';
+                return '🔴 Risky';
+            },
+
+            escapeForJS(str) {
+                if (!str) return '';
+                // Remove HTML tags for JS insertion, keep text only
+                const textOnly = str.replace(/<[^>]*>/g, '');
+                return textOnly
+                    .replace(/\\/g, '\\\\')
+                    .replace(/'/g, "\\'")
+                    .replace(/"/g, '\\"')
+                    .replace(/\n/g, '\\n')
+                    .replace(/\r/g, '\\r');
+            },
+
+            // Action Button Handlers
+            copyToClipboard(text) {
+                navigator.clipboard.writeText(text).then(() => {
+                    this.showNotification('Copied to clipboard!');
+                }).catch(err => {
+                    console.error('Failed to copy:', err);
+                    this.showNotification('Failed to copy to clipboard');
+                });
+            },
+
+            applyToEditor(content) {
+                this.nodes.htmlInput.value = content;
+                this.nodes.htmlInput.dispatchEvent(new Event('input', { bubbles: true }));
+                this.showNotification('Content applied to editor!');
+            },
+
+            useSubject(subject) {
+                if (this.nodes.subjectLineInput) {
+                    // Apply the subject line directly (it should contain variables if needed)
+                    this.nodes.subjectLineInput.value = subject;
+                    this.saveToLocalStorage();
+                    this.showNotification('Subject line applied!');
+                } else {
+                    this.copyToClipboard(subject);
+                    this.showNotification('Subject line copied!');
+                }
+            },
+
+            parseSuggestionsIntoSections(text) {
+                // Split content by headers or numbered sections
+                const sections = [];
+                const lines = text.split('\n');
+                let currentSection = { title: 'General Suggestions', content: '' };
+                
+                lines.forEach(line => {
+                    if (line.match(/^#{1,3}\s/)) {
+                        if (currentSection.content) sections.push(currentSection);
+                        currentSection = { 
+                            title: line.replace(/^#{1,3}\s/, '').trim(), 
+                            content: '' 
+                        };
+                    } else if (line.match(/^\d+\.\s*[A-Z]/)) {
+                        if (currentSection.content) sections.push(currentSection);
+                        currentSection = { 
+                            title: line.replace(/^\d+\.\s*/, '').trim().split(':')[0], 
+                            content: line 
+                        };
+                    } else {
+                        currentSection.content += line + '\n';
+                    }
+                });
+                
+                if (currentSection.content) sections.push(currentSection);
+                return sections;
+            },
+
+            getSectionIcon(title) {
+                const iconMap = {
+                    'subject': '📧',
+                    'content': '📝',
+                    'call': '🎯',
+                    'action': '🎯',
+                    'cta': '🎯',
+                    'spam': '🛡️',
+                    'structure': '🏗️',
+                    'engagement': '💡',
+                    'tone': '🎨'
+                };
+                
+                const lowerTitle = title.toLowerCase();
+                for (const [key, icon] of Object.entries(iconMap)) {
+                    if (lowerTitle.includes(key)) return icon;
+                }
+                return '•';
             },
 
             // Template Management Methods
@@ -974,6 +1487,7 @@
                 const template = {
                     name: templateName,
                     html: this.nodes.htmlInput.value,
+                    subjectLine: this.nodes.subjectLineInput ? this.nodes.subjectLineInput.value : '',
                     variables: Array.from(this.getVariables()),
                     timestamp: new Date().toISOString()
                 };
@@ -1004,6 +1518,9 @@
                 }
 
                 this.nodes.htmlInput.value = template.html;
+                if (template.subjectLine && this.nodes.subjectLineInput) {
+                    this.nodes.subjectLineInput.value = template.subjectLine;
+                }
                 this.nodes.variablesContainer.innerHTML = '';
                 
                 template.variables.forEach(([name, value]) => {
@@ -1038,6 +1555,7 @@
             saveToLocalStorage() {
                 const data = {
                     html: this.nodes.htmlInput.value,
+                    subjectLine: this.nodes.subjectLineInput ? this.nodes.subjectLineInput.value : '',
                     variables: Array.from(this.getVariables()),
                     timestamp: new Date().toISOString()
                 };
@@ -1046,9 +1564,24 @@
             },
 
             loadFromLocalStorage() {
+                // Initialize default system prompt if none exists
+                if (!localStorage.getItem('system-prompt')) {
+                    const defaultSystemPrompt = `You are an expert email marketing specialist and copywriter. Your responses should be:
+- Concise and to the point (avoid lengthy explanations)
+- Professional and actionable
+- Focused on email deliverability and engagement
+- Clear and direct in your recommendations
+
+Always prioritize brevity while maintaining quality.`;
+                    localStorage.setItem('system-prompt', defaultSystemPrompt);
+                }
+
                 const data = JSON.parse(localStorage.getItem('emailEditorData') || 'null');
                 if (data && data.html) {
                     this.nodes.htmlInput.value = data.html;
+                    if (data.subjectLine && this.nodes.subjectLineInput) {
+                        this.nodes.subjectLineInput.value = data.subjectLine;
+                    }
                     this.nodes.variablesContainer.innerHTML = '';
                     
                     data.variables.forEach(([name, value]) => {
@@ -1286,12 +1819,13 @@
             if (!this.aiReady()) return;
             this.showAILoading();
             try {
-                const aiModel = localStorage.getItem('ai-model') || 'claude-sonnet-4';
                 const systemPrompt = localStorage.getItem('system-prompt') || '';
                 const tpl = this.getPromptTemplate('rewrite');
                 const fullPrompt = this.renderPrompt(tpl, { systemPrompt, content, terms: JSON.stringify(terms) });
-                const response = await puter.ai.chat(fullPrompt, { model: aiModel });
-                const text = this.extractAIText(response) || '';
+                
+                const model = this.initGeminiClient();
+                const result = await model.generateContent(fullPrompt);
+                const text = this.extractAIText(result) || '';
                 const mapping = this.parseReplacementMapping(text);
                 if (!Array.isArray(mapping) || mapping.length === 0) {
                     throw new Error('No valid replacements returned');
@@ -1351,7 +1885,7 @@
                 }
             } catch (err) {
                 console.error('Spam Rewrite Error:', err);
-                this.showAIError('Failed to rewrite spam words. Try fewer terms or check connection.');
+                this.showAIError('Failed to rewrite spam words. Try fewer terms or check your API key.');
             }
         };
 

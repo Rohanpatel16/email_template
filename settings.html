@@ -49,39 +49,30 @@
                 </a>
             </div>
         </div>
-        <!-- AI Configuration Section -->
+        <!-- Gemini API Configuration Section -->
         <div class="settings-section">
-            <h2><i class="fas fa-robot mr-2"></i> AI Configuration</h2>
+            <h2><i class="fas fa-robot mr-2"></i> Gemini API Configuration</h2>
+            <div class="form-group">
+                <label class="form-label">Gemini API Key</label>
+                <div class="flex gap-2">
+                    <input type="password" id="gemini-api-key" class="form-input flex-1" placeholder="Enter your Gemini API key">
+                    <button id="toggle-api-key" class="btn btn-secondary" type="button">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <p class="text-sm text-slate-500 mt-1">
+                    Get your free API key from 
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-blue-600 hover:text-blue-700 underline">
+                        Google AI Studio
+                    </a>
+                </p>
+            </div>
             <div class="form-group">
                 <label class="form-label">AI Model</label>
-                <select id="ai-model" class="form-input">
-                    <option value="claude-sonnet-4">Claude Sonnet 4 (Default)</option>
-                    <option value="gpt-5">gpt-5</option>
-                    <option value="gpt-5-mini">gpt-5-mini</option>
-                    <option value="gpt-5-nano">gpt-5-nano</option>
-                    <option value="gpt-5-chat-latest">gpt-5-chat-latest</option>
-                    <option value="gpt-4.1">gpt-4.1</option>
-                    <option value="gpt-4.1-mini">gpt-4.1-mini</option>
-                    <option value="gpt-4.1-nano">gpt-4.1-nano</option>
-                    <option value="gpt-4.5-preview">gpt-4.5-preview</option>
-                    <option value="gpt-4o">gpt-4o</option>
-                    <option value="gpt-4o-mini">gpt-4o-mini</option>
-                    <option value="o1">o1</option>
-                    <option value="o1-mini">o1-mini</option>
-                    <option value="o1-pro">o1-pro</option>
-                    <option value="o3">o3</option>
-                    <option value="o3-mini">o3-mini</option>
-                    <option value="o4-mini">o4-mini</option>
-                    <option value="claude-sonnet-4">claude-sonnet-4</option>
-                    <option value="claude-opus-4">claude-opus-4</option>
-                    <option value="claude-opus-4-1">claude-opus-4-1</option>
-                    <option value="claude-sonnet-4-5">claude-sonnet-4-5</option>
-                    <option value="claude-3-7-sonnet">claude-3-7-sonnet</option>
-                    <option value="claude-3-7-opus">claude-3-7-opus</option>
-                    <option value="google/gemini-2.5-pro">google/gemini-2.5-pro</option>
-                    <option value="google/gemini-2.5-flash">google/gemini-2.5-flash</option>
+                <select id="ai-model" class="form-input" disabled>
+                    <option value="gemini-2.5-flash-lite" selected>Gemini 2.5 Flash-Lite</option>
                 </select>
-                <p class="text-sm text-slate-500 mt-1">Select the AI model to use for email optimization and suggestions</p>
+                <p class="text-sm text-slate-500 mt-1">Using Gemini 2.5 Flash-Lite for optimal performance and cost efficiency</p>
             </div>
             <div class="form-group">
                 <label class="form-label">Custom System Prompt</label>
@@ -89,7 +80,7 @@
                 <p class="text-sm text-slate-500 mt-1">Customize how the AI responds to your requests</p>
             </div>
             <button id="save-ai-config" class="btn btn-primary">
-                <i class="fas fa-save mr-2"></i> Save AI Configuration
+                <i class="fas fa-save mr-2"></i> Save Gemini Configuration
             </button>
         </div>
 
@@ -132,7 +123,61 @@
         <!-- AI Prompt Templates Section -->
         <div class="settings-section">
             <h2><i class="fas fa-file-code mr-2"></i> AI Prompt Templates</h2>
-            <p class="text-sm text-slate-500 mb-3">Use placeholders like {systemPrompt}, {content}, {tone}, {terms}. These will be replaced before sending to AI.</p>
+            <p class="text-sm text-slate-500 mb-3">Use placeholders like {systemPrompt}, {content}, {tone}, {terms}, {subjectLine}. These will be replaced before sending to AI.</p>
+            
+            <!-- Bulk Prompt Management -->
+            <div class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h3 class="text-lg font-semibold text-blue-900 mb-3 flex items-center">
+                    <i class="fas fa-magic mr-2"></i> Bulk Prompt Management
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Bulk Update All Prompts</label>
+                        <textarea id="bulk-prompt-text" class="form-input font-mono text-sm" rows="8" placeholder="Paste your prompt text here...
+
+SUPPORTED FORMATS:
+1. Single text - applies same text to all prompts
+2. Structured format with sections:
+=== SYSTEM PROMPT ===
+Your system prompt here...
+
+=== OPTIMIZE PROMPT ===
+Your optimize prompt here...
+
+=== SUGGEST PROMPT ===
+Your suggest prompt here...
+
+=== TONE PROMPT ===
+Your tone prompt here...
+
+=== SUBJECT PROMPT ===
+Your subject prompt here...
+
+=== REWRITE PROMPT ===
+Your rewrite prompt here..."></textarea>
+                        <p class="text-xs text-slate-500 mt-1">Supports both single text (applies to all) and structured format (individual prompts)</p>
+                        <button id="apply-bulk-prompts" class="btn btn-primary mt-2">
+                            <i class="fas fa-sync mr-2"></i> Apply Prompts
+                        </button>
+                    </div>
+                    <div>
+                        <label class="form-label">Import/Export Prompts</label>
+                        <div class="space-y-2">
+                            <button id="export-all-prompts" class="btn btn-secondary w-full">
+                                <i class="fas fa-download mr-2"></i> Export All Prompts
+                            </button>
+                            <button id="import-prompts" class="btn btn-secondary w-full">
+                                <i class="fas fa-upload mr-2"></i> Import Prompts
+                            </button>
+                            <input type="file" id="import-prompts-file" accept=".json" style="display: none;">
+                            <button id="copy-all-prompts" class="btn btn-secondary w-full">
+                                <i class="fas fa-copy mr-2"></i> Copy All to Clipboard
+                            </button>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-2">Export/Import all prompts as JSON for backup or sharing</p>
+                    </div>
+                </div>
+            </div>
             <details class="mb-4">
                 <summary class="cursor-pointer text-slate-700 font-medium">More info about placeholders</summary>
                 <div class="mt-2 text-sm text-slate-600 space-y-2 bg-slate-50 border border-slate-200 rounded-lg p-3">
@@ -146,7 +191,10 @@
                         <span class="font-semibold text-slate-800">{tone}</span> – The tone you enter when using “Adjust Tone” (e.g., professional, friendly).
                     </div>
                     <div>
-                        <span class="font-semibold text-slate-800">{terms}</span> – For “Rewrite Spam Words”, the comma-separated words/phrases you choose, provided to AI as JSON (e.g., ["free", "limited time"]).
+                        <span class="font-semibold text-slate-800">{terms}</span> – For "Rewrite Spam Words", the comma-separated words/phrases you choose, provided to AI as JSON (e.g., ["free", "limited time"]).
+                    </div>
+                    <div>
+                        <span class="font-semibold text-slate-800">{subjectLine}</span> – The current subject line from the preview section.
                     </div>
                     <div class="pt-2 border-t border-slate-200">
                         <span class="font-semibold text-slate-800">Tips</span>
@@ -235,10 +283,10 @@
             },
 
             loadSettings() {
-                // Load AI Configuration
-                const aiModel = localStorage.getItem('ai-model') || 'claude-sonnet-4';
+                // Load Gemini API Configuration
+                const geminiApiKey = localStorage.getItem('gemini-api-key') || '';
                 const systemPrompt = localStorage.getItem('system-prompt') || 'You are an expert email marketing assistant. Help users create professional, engaging, and spam-filter-friendly emails.';
-                document.getElementById('ai-model').value = aiModel;
+                document.getElementById('gemini-api-key').value = geminiApiKey;
                 document.getElementById('system-prompt').value = systemPrompt;
 
                 // Load custom spam words
@@ -260,9 +308,17 @@
             bindEvents() {
                 // AI Configuration
                 document.getElementById('save-ai-config').addEventListener('click', () => this.saveAIConfig());
+                document.getElementById('toggle-api-key').addEventListener('click', () => this.toggleApiKeyVisibility());
                 // Prompt Templates
                 document.getElementById('save-prompt-templates').addEventListener('click', () => this.savePromptTemplates());
                 document.getElementById('reset-prompt-templates').addEventListener('click', () => this.resetPromptTemplates());
+                
+                // Bulk Prompt Management
+                document.getElementById('apply-bulk-prompts').addEventListener('click', () => this.applyBulkPrompts());
+                document.getElementById('export-all-prompts').addEventListener('click', () => this.exportAllPrompts());
+                document.getElementById('import-prompts').addEventListener('click', () => document.getElementById('import-prompts-file').click());
+                document.getElementById('import-prompts-file').addEventListener('change', (e) => this.importPrompts(e));
+                document.getElementById('copy-all-prompts').addEventListener('click', () => this.copyAllPromptsToClipboard());
 
                 // Spam Words Management
                 document.getElementById('add-spam-word-btn').addEventListener('click', () => this.addCustomSpamWord());
@@ -281,11 +337,11 @@
             },
             getDefaultPromptTemplates() {
                 return {
-                    optimize: `{systemPrompt}\n\nOptimize this email content for better engagement and deliverability. Make it more professional and compelling while maintaining the original intent:\n\n{content}`,
-                    suggest: `{systemPrompt}\n\nAnalyze this email content and provide specific suggestions for improvement. Focus on:\n1. Subject line recommendations\n2. Content structure improvements\n3. Call-to-action optimization\n4. Spam avoidance tips\n\nContent: {content}`,
-                    tone: `{systemPrompt}\n\nRewrite this email content to have a {tone} tone while maintaining the same message and structure:\n\n{content}`,
-                    subject: `{systemPrompt}\n\nGenerate 5 compelling subject lines for this email content. Make them engaging and spam-filter friendly:\n\n{content}`,
-                    rewrite: `{systemPrompt}\n\nYou will receive a list of exact words/phrases and an email HTML.\nReturn ONLY a JSON array of objects with shape: [{"from":"...","to":"..."}].\nRules:\n- Propose safe, natural, non-spammy replacements.\n- Replace ONLY the provided words/phrases when they appear as text; do NOT change structure, HTML tags, links, or variables like {{name}}.\n- Keep case and punctuation sensible; if a phrase is part of a larger word, do not replace.\n\nTERMS:\n{terms}\n\nEMAIL_HTML:\n{content}`
+                    optimize: `{systemPrompt}\n\nOptimize this email content for better engagement and deliverability. Make it more professional and compelling while maintaining the original intent.\n\nIMPORTANT: Keep your response concise (under 200 words). Focus on the most impactful improvements only.\n\nContent: {content}`,
+                    suggest: `{systemPrompt}\n\nAnalyze this email content and provide specific suggestions for improvement. Focus on:\n1. Subject line recommendations\n2. Content structure improvements\n3. Call-to-action optimization\n4. Spam avoidance tips\n\nIMPORTANT: Keep your response concise (under 150 words). Provide only the most critical suggestions.\n\nContent: {content}`,
+                    tone: `{systemPrompt}\n\nRewrite this email content to have a {tone} tone while maintaining the same message and structure.\n\nIMPORTANT: Keep your response concise. Return only the rewritten content without explanations.\n\nContent: {content}`,
+                    subject: `{systemPrompt}\n\nGenerate 5 compelling subject lines for this email.\n\nCurrent Subject Template: {subjectLine}\nEmail Content: {content}\n\nIMPORTANT: Return only the 5 subject lines, one per line, without explanations or numbering. If the current subject uses variables like {{company_name}}, you can use similar variable patterns in your suggestions.`,
+                    rewrite: `{systemPrompt}\n\nYou will receive a list of exact words/phrases and an email HTML.\nReturn ONLY a JSON array of objects with shape: [{"from":"...","to":"..."}].\n\nCRITICAL RULES:\n- NEVER return the same word as the replacement. Always provide a different, better alternative.\n- Propose safe, natural, non-spammy replacements that are clearly different from the original.\n- Replace ONLY the provided words/phrases when they appear as text; do NOT change structure, HTML tags, links, or variables like {{name}}.\n- Keep case and punctuation sensible; if a phrase is part of a larger word, do not replace.\n- If you cannot find a good replacement, omit that word from the response entirely.\n\nTERMS:\n{terms}\n\nEMAIL_HTML:\n{content}`
                 };
             },
             savePromptTemplates() {
@@ -313,12 +369,234 @@
                 this.showNotification('Prompt templates reset to defaults!');
             },
 
+            // Bulk Prompt Management Functions
+            applyBulkPrompts() {
+                const bulkText = document.getElementById('bulk-prompt-text').value.trim();
+                if (!bulkText) {
+                    this.showNotification('Please enter prompt text to apply to all templates', 'error');
+                    return;
+                }
+
+                // Check if it's structured format (contains section headers)
+                if (bulkText.includes('=== SYSTEM PROMPT ===') || bulkText.includes('=== OPTIMIZE PROMPT ===')) {
+                    this.parseAndApplyStructuredPrompts(bulkText);
+                } else {
+                    // Apply same text to all prompts
+                    if (!confirm('This will replace ALL prompt templates with the same text. Are you sure?')) {
+                        return;
+                    }
+
+                    const promptIds = ['prompt-optimize', 'prompt-suggest', 'prompt-tone', 'prompt-subject', 'prompt-rewrite'];
+                    promptIds.forEach(id => {
+                        document.getElementById(id).value = bulkText;
+                        localStorage.setItem(id, bulkText);
+                    });
+
+                    document.getElementById('bulk-prompt-text').value = '';
+                    this.showNotification('All prompt templates updated successfully!');
+                }
+            },
+
+            parseAndApplyStructuredPrompts(text) {
+                try {
+                    const prompts = this.extractPromptsFromStructuredText(text);
+                    let updatedCount = 0;
+
+                    // Update system prompt if found
+                    if (prompts.systemPrompt) {
+                        document.getElementById('system-prompt').value = prompts.systemPrompt;
+                        localStorage.setItem('system-prompt', prompts.systemPrompt);
+                        updatedCount++;
+                    }
+
+                    // Update individual prompt templates
+                    const promptMappings = {
+                        'optimize': 'prompt-optimize',
+                        'suggest': 'prompt-suggest', 
+                        'tone': 'prompt-tone',
+                        'subject': 'prompt-subject',
+                        'rewrite': 'prompt-rewrite'
+                    };
+
+                    Object.keys(promptMappings).forEach(key => {
+                        if (prompts[key]) {
+                            const elementId = promptMappings[key];
+                            document.getElementById(elementId).value = prompts[key];
+                            localStorage.setItem(elementId, prompts[key]);
+                            updatedCount++;
+                        }
+                    });
+
+                    if (updatedCount > 0) {
+                        document.getElementById('bulk-prompt-text').value = '';
+                        this.showNotification(`Successfully updated ${updatedCount} prompt template(s)!`);
+                    } else {
+                        this.showNotification('No valid prompts found in the structured format', 'error');
+                    }
+                } catch (error) {
+                    this.showNotification('Error parsing structured prompts. Please check the format.', 'error');
+                }
+            },
+
+            extractPromptsFromStructuredText(text) {
+                const prompts = {};
+                
+                // Define section patterns
+                const sections = [
+                    { key: 'systemPrompt', pattern: /=== SYSTEM PROMPT ===\s*\n(.*?)(?=\n===|$)/s },
+                    { key: 'optimize', pattern: /=== OPTIMIZE PROMPT ===\s*\n(.*?)(?=\n===|$)/s },
+                    { key: 'suggest', pattern: /=== SUGGEST PROMPT ===\s*\n(.*?)(?=\n===|$)/s },
+                    { key: 'tone', pattern: /=== TONE PROMPT ===\s*\n(.*?)(?=\n===|$)/s },
+                    { key: 'subject', pattern: /=== SUBJECT PROMPT ===\s*\n(.*?)(?=\n===|$)/s },
+                    { key: 'rewrite', pattern: /=== REWRITE PROMPT ===\s*\n(.*?)(?=\n===|$)/s }
+                ];
+
+                sections.forEach(section => {
+                    const match = text.match(section.pattern);
+                    if (match && match[1]) {
+                        prompts[section.key] = match[1].trim();
+                    }
+                });
+
+                return prompts;
+            },
+
+            exportAllPrompts() {
+                const prompts = {
+                    optimize: localStorage.getItem('prompt-optimize') || this.getDefaultPromptTemplates().optimize,
+                    suggest: localStorage.getItem('prompt-suggest') || this.getDefaultPromptTemplates().suggest,
+                    tone: localStorage.getItem('prompt-tone') || this.getDefaultPromptTemplates().tone,
+                    subject: localStorage.getItem('prompt-subject') || this.getDefaultPromptTemplates().subject,
+                    rewrite: localStorage.getItem('prompt-rewrite') || this.getDefaultPromptTemplates().rewrite,
+                    systemPrompt: localStorage.getItem('system-prompt') || '',
+                    exportDate: new Date().toISOString(),
+                    version: '1.0'
+                };
+
+                const dataStr = JSON.stringify(prompts, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `prompt-templates-${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                URL.revokeObjectURL(url);
+                this.showNotification('All prompts exported successfully!');
+            },
+
+            importPrompts(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        
+                        if (!confirm('This will replace all current prompt templates. Are you sure?')) {
+                            event.target.value = '';
+                            return;
+                        }
+
+                        // Import individual prompts
+                        if (importedData.optimize) {
+                            document.getElementById('prompt-optimize').value = importedData.optimize;
+                            localStorage.setItem('prompt-optimize', importedData.optimize);
+                        }
+                        if (importedData.suggest) {
+                            document.getElementById('prompt-suggest').value = importedData.suggest;
+                            localStorage.setItem('prompt-suggest', importedData.suggest);
+                        }
+                        if (importedData.tone) {
+                            document.getElementById('prompt-tone').value = importedData.tone;
+                            localStorage.setItem('prompt-tone', importedData.tone);
+                        }
+                        if (importedData.subject) {
+                            document.getElementById('prompt-subject').value = importedData.subject;
+                            localStorage.setItem('prompt-subject', importedData.subject);
+                        }
+                        if (importedData.rewrite) {
+                            document.getElementById('prompt-rewrite').value = importedData.rewrite;
+                            localStorage.setItem('prompt-rewrite', importedData.rewrite);
+                        }
+                        if (importedData.systemPrompt) {
+                            document.getElementById('system-prompt').value = importedData.systemPrompt;
+                            localStorage.setItem('system-prompt', importedData.systemPrompt);
+                        }
+
+                        this.showNotification('Prompts imported successfully!');
+                    } catch (error) {
+                        this.showNotification('Error importing prompts. Invalid file format.', 'error');
+                    }
+                };
+                reader.readAsText(file);
+                event.target.value = '';
+            },
+
+            copyAllPromptsToClipboard() {
+                const prompts = {
+                    optimize: localStorage.getItem('prompt-optimize') || this.getDefaultPromptTemplates().optimize,
+                    suggest: localStorage.getItem('prompt-suggest') || this.getDefaultPromptTemplates().suggest,
+                    tone: localStorage.getItem('prompt-tone') || this.getDefaultPromptTemplates().tone,
+                    subject: localStorage.getItem('prompt-subject') || this.getDefaultPromptTemplates().subject,
+                    rewrite: localStorage.getItem('prompt-rewrite') || this.getDefaultPromptTemplates().rewrite,
+                    systemPrompt: localStorage.getItem('system-prompt') || ''
+                };
+
+                const textToCopy = `=== AI PROMPT TEMPLATES ===
+Generated: ${new Date().toLocaleString()}
+
+=== SYSTEM PROMPT ===
+${prompts.systemPrompt}
+
+=== OPTIMIZE PROMPT ===
+${prompts.optimize}
+
+=== SUGGEST PROMPT ===
+${prompts.suggest}
+
+=== TONE PROMPT ===
+${prompts.tone}
+
+=== SUBJECT PROMPT ===
+${prompts.subject}
+
+=== REWRITE PROMPT ===
+${prompts.rewrite}`;
+
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    this.showNotification('All prompts copied to clipboard!');
+                }).catch(() => {
+                    this.showNotification('Failed to copy to clipboard', 'error');
+                });
+            },
+
             saveAIConfig() {
-                const model = document.getElementById('ai-model').value;
+                const apiKey = document.getElementById('gemini-api-key').value.trim();
                 const prompt = document.getElementById('system-prompt').value;
-                localStorage.setItem('ai-model', model);
+                
+                if (!apiKey) {
+                    this.showNotification('Please enter your Gemini API key', 'error');
+                    return;
+                }
+                
+                localStorage.setItem('gemini-api-key', apiKey);
                 localStorage.setItem('system-prompt', prompt);
-                this.showNotification('AI configuration saved successfully!');
+                this.showNotification('Gemini configuration saved successfully!');
+            },
+
+            toggleApiKeyVisibility() {
+                const apiKeyInput = document.getElementById('gemini-api-key');
+                const toggleBtn = document.getElementById('toggle-api-key');
+                const icon = toggleBtn.querySelector('i');
+                
+                if (apiKeyInput.type === 'password') {
+                    apiKeyInput.type = 'text';
+                    icon.className = 'fas fa-eye-slash';
+                } else {
+                    apiKeyInput.type = 'password';
+                    icon.className = 'fas fa-eye';
+                }
             },
 
             loadCustomSpamWords() {
@@ -443,7 +721,7 @@
             },
             resetAllSettings() {
                 if (confirm('Are you sure you want to reset ALL settings? This cannot be undone.')) {
-                    localStorage.removeItem('ai-model');
+                    localStorage.removeItem('gemini-api-key');
                     localStorage.removeItem('system-prompt');
                     localStorage.removeItem('custom-spam-words');
                     localStorage.removeItem('email-signature');
