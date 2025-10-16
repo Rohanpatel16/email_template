@@ -18,6 +18,16 @@ This document summarizes all the minor fixes and improvements implemented in the
 **Fix:** Added null coalescing operator `|| []` to safely handle empty content
 **Impact:** Prevents runtime errors when counting words in empty content
 
+### 3. Subject Line Preview Not Updating (index.html)
+**Issue:** When clicking "Use This" on generated subject lines, the preview wasn't updating
+**Fix:** Added `this.renderSubjectLine()` call in `useSubject()` function to explicitly update preview
+**Impact:** Ensures real-time visual feedback when applying AI-generated subject lines
+
+### 4. Spam Word Detection Using Wrong Text (index.html)
+**Issue:** "Rewrite Spam Words" feature was sending capitalized keyword labels to AI instead of actual text
+**Fix:** Updated `collectCurrentSpamKeywords()` to extract actual `textContent` from highlighted elements
+**Impact:** AI now receives the correct text context for more accurate rewrites
+
 ---
 
 ## 🎨 New Files Created
@@ -221,6 +231,32 @@ No action required. All changes are backward compatible.
 2. Implement progressive web app features
 3. Add offline support with service workers
 4. Create developer documentation site
+
+---
+
+## 🚀 New Features Added
+
+### AI Temperature Control (Settings Page)
+**Feature:** Added AI Temperature slider to control creativity level of AI responses  
+**Location:** Settings page → Gemini API Configuration section  
+**Details:**
+- Interactive slider ranging from 0.0 (Precise) to 2.0 (Creative)
+- Real-time value display with visual indicators
+- Default value: 1.0 (Balanced)
+- Saved to localStorage for persistence
+- Integrated with all AI functions in index.html
+
+**Implementation:**
+- Added `ai-temperature` slider in `settings.html`
+- Updated `saveAIConfig()` to store temperature setting
+- Modified `initGeminiClient()` in `index.html` to apply temperature to AI model
+- Temperature now affects all AI operations: suggestions, rewrites, tone changes, and subject generation
+
+**Impact:**
+- Users can now control the level of creativity vs. precision in AI responses
+- Lower values (0.0-0.5) produce more focused, deterministic outputs
+- Higher values (1.5-2.0) produce more creative, varied responses
+- Balanced default ensures consistent behavior for new users
 
 ---
 
