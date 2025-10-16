@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Professional Email Template Previewer</title>
+    <link rel="stylesheet" href="shared-styles.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="shared-utils.js"></script>
     <script type="importmap">
         {
             "imports": {
@@ -747,19 +749,19 @@
                     </div>
                     <!-- Toolbar -->
                     <div class="py-4">
-                        <div id="toolbar" class="flex flex-wrap items-center gap-2 p-3 rounded-xl border-2" style="background: var(--color-light-bg); border-color: var(--color-platinum);">
-                            <button class="toolbar-btn" data-command="bold"><i class="fas fa-bold"></i></button>
-                            <button class="toolbar-btn" data-command="italic"><i class="fas fa-italic"></i></button>
-                            <button class="toolbar-btn" data-command="underline"><i class="fas fa-underline"></i></button>
-                            <button class="toolbar-btn" data-command="strikeThrough"><i class="fas fa-strikethrough"></i></button>
-                            <button class="toolbar-btn" data-command="createLink"><i class="fas fa-link"></i></button>
+                        <div id="toolbar" class="flex flex-wrap items-center gap-2 p-3 rounded-xl border-2" role="toolbar" aria-label="Text formatting toolbar" style="background: var(--color-light-bg); border-color: var(--color-platinum);">
+                            <button class="toolbar-btn" data-command="bold" aria-label="Bold text (Ctrl+B)" title="Bold"><i class="fas fa-bold"></i></button>
+                            <button class="toolbar-btn" data-command="italic" aria-label="Italic text (Ctrl+I)" title="Italic"><i class="fas fa-italic"></i></button>
+                            <button class="toolbar-btn" data-command="underline" aria-label="Underline text (Ctrl+U)" title="Underline"><i class="fas fa-underline"></i></button>
+                            <button class="toolbar-btn" data-command="strikeThrough" aria-label="Strikethrough text" title="Strikethrough"><i class="fas fa-strikethrough"></i></button>
+                            <button class="toolbar-btn" data-command="createLink" aria-label="Insert link" title="Insert Link"><i class="fas fa-link"></i></button>
                             <div class="h-6 border-l-2" style="border-color: var(--color-platinum);"></div>
-                            <button class="toolbar-btn" data-command="justifyLeft"><i class="fas fa-align-left"></i></button>
-                            <button class="toolbar-btn" data-command="justifyCenter"><i class="fas fa-align-center"></i></button>
-                            <button class="toolbar-btn" data-command="justifyRight"><i class="fas fa-align-right"></i></button>
+                            <button class="toolbar-btn" data-command="justifyLeft" aria-label="Align left" title="Align Left"><i class="fas fa-align-left"></i></button>
+                            <button class="toolbar-btn" data-command="justifyCenter" aria-label="Align center" title="Align Center"><i class="fas fa-align-center"></i></button>
+                            <button class="toolbar-btn" data-command="justifyRight" aria-label="Align right" title="Align Right"><i class="fas fa-align-right"></i></button>
                             <div class="h-6 border-l-2" style="border-color: var(--color-platinum);"></div>
-                            <button class="toolbar-btn" data-command="insertOrderedList"><i class="fas fa-list-ol"></i></button>
-                            <button class="toolbar-btn" data-command="insertUnorderedList"><i class="fas fa-list-ul"></i></button>
+                            <button class="toolbar-btn" data-command="insertOrderedList" aria-label="Numbered list" title="Numbered List"><i class="fas fa-list-ol"></i></button>
+                            <button class="toolbar-btn" data-command="insertUnorderedList" aria-label="Bullet list" title="Bullet List"><i class="fas fa-list-ul"></i></button>
                             <div class="h-6 border-l-2" style="border-color: var(--color-platinum);"></div>
                             <select class="toolbar-select" data-command="fontName">
                                 <option value="Arial">Arial</option> <option value="Verdana">Verdana</option> <option value="Georgia">Georgia</option> <option value="Times New Roman">Times</option> <option value="Courier New">Courier</option>
@@ -773,12 +775,12 @@
                                 <input type="color" class="w-8 h-8 bg-transparent border-l-2 cursor-pointer" style="border-color: var(--color-platinum-dark);" data-command="foreColor" value="#000000" title="Text Color">
                             </div>
                             <div class="h-6 border-l-2" style="border-color: var(--color-platinum);"></div>
-                            <button class="toolbar-btn" data-command="removeFormat" title="Clear Formatting"><i class="fas fa-eraser"></i></button>
+                            <button class="toolbar-btn" data-command="removeFormat" aria-label="Clear formatting" title="Clear Formatting"><i class="fas fa-eraser"></i></button>
                             <div class="h-6 border-l-2" style="border-color: var(--color-platinum);"></div>
-                            <button id="undo-btn" class="toolbar-btn" title="Undo (Ctrl+Z)"><i class="fas fa-undo"></i></button>
-                            <button id="redo-btn" class="toolbar-btn" title="Redo (Ctrl+Y)"><i class="fas fa-redo"></i></button>
+                            <button id="undo-btn" class="toolbar-btn" aria-label="Undo (Ctrl+Z)" title="Undo (Ctrl+Z)"><i class="fas fa-undo"></i></button>
+                            <button id="redo-btn" class="toolbar-btn" aria-label="Redo (Ctrl+Y)" title="Redo (Ctrl+Y)"><i class="fas fa-redo"></i></button>
                             <div class="h-6 border-l-2" style="border-color: var(--color-platinum);"></div>
-                            <button id="help-btn" class="toolbar-btn" title="Keyboard Shortcuts"><i class="fas fa-question-circle"></i></button>
+                            <button id="help-btn" class="toolbar-btn" aria-label="Show keyboard shortcuts" title="Keyboard Shortcuts"><i class="fas fa-question-circle"></i></button>
                         </div>
                     </div>
                     <!-- Email Body -->
@@ -796,14 +798,14 @@
     </div>
 
     <!-- Custom Link Modal -->
-    <div id="link-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div id="link-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="link-modal-title">
         <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl border-2 transform transition-all" style="border-color: var(--color-blue-violet);">
             <div class="mb-6">
                 <div class="flex items-center mb-2">
                     <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3" style="background: linear-gradient(135deg, var(--color-blue-violet), var(--color-carrot-orange));">
                         <i class="fas fa-link text-white"></i>
                     </div>
-                    <h2 class="text-2xl font-bold" style="color: var(--color-text);">Insert Link</h2>
+                    <h2 id="link-modal-title" class="text-2xl font-bold" style="color: var(--color-text);">Insert Link</h2>
                 </div>
                 <p class="text-sm" style="color: var(--color-text-muted);">Enter the URL you want to link to</p>
             </div>
@@ -848,14 +850,14 @@
     </div>
 
     <!-- Custom Tone Modal -->
-    <div id="tone-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div id="tone-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="tone-modal-title">
         <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl border-2 transform transition-all" style="border-color: var(--color-carrot-orange);">
             <div class="mb-6">
                 <div class="flex items-center mb-2">
                     <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3" style="background: linear-gradient(135deg, var(--color-carrot-orange), var(--color-blue-violet));">
                         <i class="fas fa-palette text-white"></i>
                     </div>
-                    <h2 class="text-2xl font-bold" style="color: var(--color-text);">Adjust Tone</h2>
+                    <h2 id="tone-modal-title" class="text-2xl font-bold" style="color: var(--color-text);">Adjust Tone</h2>
                 </div>
                 <p class="text-sm" style="color: var(--color-text-muted);">Choose the tone style for your email content</p>
             </div>
@@ -891,14 +893,14 @@
     </div>
 
     <!-- Custom Save Template Modal -->
-    <div id="save-template-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div id="save-template-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="save-template-modal-title">
         <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl border-2 transform transition-all" style="border-color: var(--color-carrot-orange);">
             <div class="mb-6">
                 <div class="flex items-center mb-2">
                     <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3" style="background: linear-gradient(135deg, var(--color-carrot-orange), var(--color-blue-violet));">
                         <i class="fas fa-save text-white"></i>
                     </div>
-                    <h2 class="text-2xl font-bold" style="color: var(--color-text);">Save Template</h2>
+                    <h2 id="save-template-modal-title" class="text-2xl font-bold" style="color: var(--color-text);">Save Template</h2>
                 </div>
                 <p class="text-sm" style="color: var(--color-text-muted);">Give your template a memorable name</p>
             </div>
@@ -928,14 +930,14 @@
     </div>
 
     <!-- Custom Load Template Modal -->
-    <div id="load-template-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div id="load-template-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="load-template-modal-title">
         <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl border-2 transform transition-all" style="border-color: var(--color-blue-violet);">
             <div class="mb-6">
                 <div class="flex items-center mb-2">
                     <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3" style="background: linear-gradient(135deg, var(--color-blue-violet), var(--color-carrot-orange));">
                         <i class="fas fa-folder-open text-white"></i>
                     </div>
-                    <h2 class="text-2xl font-bold" style="color: var(--color-text);">Load Template</h2>
+                    <h2 id="load-template-modal-title" class="text-2xl font-bold" style="color: var(--color-text);">Load Template</h2>
                 </div>
                 <p class="text-sm" style="color: var(--color-text-muted);">Select a template to load</p>
             </div>
@@ -958,14 +960,14 @@
     </div>
 
     <!-- Custom Spam Rewrite Modal -->
-    <div id="spam-rewrite-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div id="spam-rewrite-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="spam-rewrite-modal-title">
         <div class="bg-white rounded-2xl p-8 max-w-lg w-full mx-4 shadow-2xl border-2 transform transition-all" style="border-color: var(--color-poppy);">
             <div class="mb-6">
                 <div class="flex items-center mb-2">
                     <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3" style="background: linear-gradient(135deg, var(--color-poppy), var(--color-carrot-orange));">
                         <i class="fas fa-broom text-white"></i>
                     </div>
-                    <h2 class="text-2xl font-bold" style="color: var(--color-text);">Rewrite Spam Words</h2>
+                    <h2 id="spam-rewrite-modal-title" class="text-2xl font-bold" style="color: var(--color-text);">Rewrite Spam Words</h2>
                 </div>
                 <p class="text-sm" style="color: var(--color-text-muted);">Enter words/phrases to rewrite (comma-separated)</p>
             </div>
@@ -998,10 +1000,10 @@
     </div>
 
     <!-- Help Modal -->
-    <div id="help-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+    <div id="help-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="help-modal-title">
         <div class="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto shadow-2xl border-2" style="border-color: var(--color-blue-violet);">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold" style="color: var(--color-text);">Keyboard Shortcuts & Help</h2>
+                <h2 id="help-modal-title" class="text-2xl font-bold" style="color: var(--color-text);">Keyboard Shortcuts & Help</h2>
                 <button id="close-help" class="text-2xl w-10 h-10 rounded-lg transition-all" style="color: var(--color-text-muted);" onmouseover="this.style.background='var(--color-platinum)'" onmouseout="this.style.background='transparent'">&times;</button>
             </div>
             <div class="space-y-6">
@@ -1160,7 +1162,8 @@
                     if (typeof response === 'string') return response;
                     
                     return null;
-                } catch (_) {
+                } catch (error) {
+                    console.error('Error extracting AI text:', error);
                     return null;
                 }
             },
@@ -1238,8 +1241,14 @@
             bindEvents() {
                 // Existing events
                 this.nodes.addVariableBtn.addEventListener('click', () => this.addVariableRow());
-                this.nodes.htmlInput.addEventListener('input', () => {
+                
+                // Debounce heavy operations on input
+                const debouncedRender = window.EmailEditorUtils?.debounce(() => {
                     this.renderPreview();
+                }, 300) || (() => this.renderPreview());
+                
+                this.nodes.htmlInput.addEventListener('input', () => {
+                    debouncedRender();
                     this.updateWordCount();
                     this.saveToLocalStorage();
                 });
@@ -1425,11 +1434,17 @@
                 const linkTextInput = document.getElementById('link-text-input');
                 const url = linkUrlInput.value.trim();
                 
-                if (!url || url === 'https://') {
+                // Validate URL
+                const validation = window.EmailEditorUtils?.validateUrl(url) || 
+                    { isValid: url && url !== 'https://', error: 'Invalid URL' };
+                
+                if (!validation.isValid) {
+                    this.showNotification(validation.error, 'error');
                     linkUrlInput.style.borderColor = 'var(--color-poppy)';
+                    const flashDuration = window.EMAIL_EDITOR_CONSTANTS?.BORDER_FLASH_DURATION_MS || 1500;
                     setTimeout(() => {
                         linkUrlInput.style.borderColor = 'var(--color-platinum)';
-                    }, 1500);
+                    }, flashDuration);
                     return;
                 }
                 
@@ -1740,7 +1755,7 @@
             async optimizeWithAI() {
                 const content = this.nodes.htmlInput.value;
                 if (!content.trim()) {
-                    this.showNotification('Please add some content to optimize');
+                    this.showNotification('Please add some content to optimize', 'warning');
                     return;
                 }
 
@@ -1754,18 +1769,22 @@
                     const model = this.initGeminiClient();
                     const result = await model.generateContent(fullPrompt);
                     const text = this.extractAIText(result);
-                    if (!text) throw new Error('Invalid Gemini response format');
+                    if (!text) throw new Error('Invalid response format from AI');
                     this.showAIResponse(text, 'optimize');
                 } catch (error) {
-                    console.error('AI Optimization Error:', error);
-                    this.showAIError('Failed to optimize content. Please check your API key and try again.');
+                    const errorMsg = error.message?.includes('API') || error.message?.includes('key')
+                        ? 'Invalid API key or quota exceeded. Please check your Gemini API key in Settings.'
+                        : error.message?.includes('network') || error.message?.includes('fetch')
+                        ? 'Network error. Please check your internet connection and try again.'
+                        : `Failed to optimize content: ${error.message || 'Unknown error'}`;
+                    this.showAIError(errorMsg, error);
                 }
             },
 
             async getAISuggestions() {
                 const content = this.nodes.htmlInput.value;
                 if (!content.trim()) {
-                    this.showNotification('Please add some content to get suggestions');
+                    this.showNotification('Please add some content to get suggestions', 'warning');
                     return;
                 }
 
@@ -1779,11 +1798,15 @@
                     const model = this.initGeminiClient();
                     const result = await model.generateContent(fullPrompt);
                     const text = this.extractAIText(result);
-                    if (!text) throw new Error('Invalid Gemini response format');
+                    if (!text) throw new Error('Invalid response format from AI');
                     this.showAIResponse(text, 'suggest');
                 } catch (error) {
-                    console.error('AI Suggestions Error:', error);
-                    this.showAIError('Failed to get suggestions. Please check your API key and try again.');
+                    const errorMsg = error.message?.includes('API') || error.message?.includes('key')
+                        ? 'Invalid API key or quota exceeded. Please check your Gemini API key in Settings.'
+                        : error.message?.includes('network') || error.message?.includes('fetch')
+                        ? 'Network error. Please check your internet connection and try again.'
+                        : `Failed to get suggestions: ${error.message || 'Unknown error'}`;
+                    this.showAIError(errorMsg, error);
                 }
             },
 
@@ -1814,10 +1837,12 @@
                 const tone = toneInput.value.trim();
                 
                 if (!tone) {
+                    this.showNotification('Please enter a tone style', 'warning');
                     toneInput.style.borderColor = 'var(--color-poppy)';
+                    const flashDuration = window.EMAIL_EDITOR_CONSTANTS?.BORDER_FLASH_DURATION_MS || 1500;
                     setTimeout(() => {
                         toneInput.style.borderColor = 'var(--color-platinum)';
-                    }, 1500);
+                    }, flashDuration);
                     return;
                 }
                 
@@ -1834,19 +1859,22 @@
                     const model = this.initGeminiClient();
                     const result = await model.generateContent(fullPrompt);
                     const text = this.extractAIText(result);
-                    if (!text) throw new Error('Invalid Gemini response format');
+                    if (!text) throw new Error('Invalid response format from AI');
                     this.showAIResponse(text, 'tone');
                 } catch (error) {
-                    console.error('AI Tone Adjustment Error:', error);
-                    const msg = (error && (error.message || error.error || error.code)) ? `Failed to adjust tone: ${error.message || error.error || error.code}` : 'Failed to adjust tone. Please check your API key and try again.';
-                    this.showAIError(msg);
+                    const errorMsg = error.message?.includes('API') || error.message?.includes('key')
+                        ? 'Invalid API key or quota exceeded. Please check your Gemini API key in Settings.'
+                        : error.message?.includes('network') || error.message?.includes('fetch')
+                        ? 'Network error. Please check your internet connection and try again.'
+                        : `Failed to adjust tone: ${error.message || 'Unknown error'}`;
+                    this.showAIError(errorMsg, error);
                 }
             },
 
             async generateSubject() {
                 const content = this.nodes.htmlInput.value;
                 if (!content.trim()) {
-                    this.showNotification('Please add some content to generate a subject line');
+                    this.showNotification('Please add some content to generate subject lines', 'warning');
                     return;
                 }
 
@@ -1862,11 +1890,15 @@
                     const model = this.initGeminiClient();
                     const result = await model.generateContent(fullPrompt);
                     const text = this.extractAIText(result);
-                    if (!text) throw new Error('Invalid Gemini response format');
+                    if (!text) throw new Error('Invalid response format from AI');
                     this.showAIResponse(text, 'subject');
                 } catch (error) {
-                    console.error('AI Subject Generation Error:', error);
-                    this.showAIError('Failed to generate subject lines. Please check your API key and try again.');
+                    const errorMsg = error.message?.includes('API') || error.message?.includes('key')
+                        ? 'Invalid API key or quota exceeded. Please check your Gemini API key in Settings.'
+                        : error.message?.includes('network') || error.message?.includes('fetch')
+                        ? 'Network error. Please check your internet connection and try again.'
+                        : `Failed to generate subject lines: ${error.message || 'Unknown error'}`;
+                    this.showAIError(errorMsg, error);
                 }
             },
 
@@ -1892,10 +1924,27 @@
                 document.getElementById('ai-response').classList.remove('hidden');
             },
 
-            showAIError(message) {
+            showAIError(message, error = null) {
+                // Log error for debugging
+                if (error) {
+                    console.error('AI Error Details:', error);
+                }
+                
                 document.getElementById('ai-loading').classList.add('hidden');
-                document.getElementById('ai-content').innerHTML = `<div class="text-red-600">${message}</div>`;
+                const errorHtml = `
+                    <div class="p-4 rounded-xl border-2" style="background: rgba(223, 41, 53, 0.1); border-color: var(--color-poppy);">
+                        <div class="flex items-start">
+                            <i class="fas fa-exclamation-circle text-2xl mr-3" style="color: var(--color-poppy);"></i>
+                            <div class="flex-1">
+                                <h4 class="font-semibold mb-2" style="color: var(--color-poppy);">Error</h4>
+                                <p class="text-sm" style="color: var(--color-text);">${message}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('ai-content').innerHTML = errorHtml;
                 document.getElementById('ai-response').classList.remove('hidden');
+                this.showNotification(message, 'error');
             },
 
             // AI Response Formatters
@@ -2175,6 +2224,8 @@
                 if (this.nodes.subjectLineInput) {
                     // Apply the subject line directly (it should contain variables if needed)
                     this.nodes.subjectLineInput.value = subject;
+                    // Update the preview to reflect the new subject line
+                    this.renderSubjectLine();
                     this.saveToLocalStorage();
                     this.showNotification('Subject line applied!');
                 } else {
@@ -2252,11 +2303,17 @@
                 const input = document.getElementById('template-name-input');
                 const templateName = input.value.trim();
                 
-                if (!templateName) {
+                // Validate template name
+                const validation = window.EmailEditorUtils?.validateTemplateName(templateName) || 
+                    { isValid: !!templateName, error: 'Template name cannot be empty' };
+                
+                if (!validation.isValid) {
+                    this.showNotification(validation.error, 'error');
                     input.style.borderColor = 'var(--color-poppy)';
+                    const flashDuration = window.EMAIL_EDITOR_CONSTANTS?.BORDER_FLASH_DURATION_MS || 1500;
                     setTimeout(() => {
                         input.style.borderColor = 'var(--color-platinum)';
-                    }, 1500);
+                    }, flashDuration);
                     return;
                 }
 
@@ -2352,14 +2409,36 @@
 
             // Auto-save functionality
             initAutoSave() {
+                const AUTO_SAVE_INTERVAL = window.EMAIL_EDITOR_CONSTANTS?.AUTO_SAVE_INTERVAL_MS || 30000;
                 this.autoSaveInterval = setInterval(() => {
                     this.saveToLocalStorage();
-                }, 30000); // Auto-save every 30 seconds
+                }, AUTO_SAVE_INTERVAL);
 
                 // Save on page unload
-                window.addEventListener('beforeunload', () => {
+                this.beforeUnloadHandler = () => {
                     this.saveToLocalStorage();
-                });
+                };
+                window.addEventListener('beforeunload', this.beforeUnloadHandler);
+            },
+            
+            // Cleanup function to prevent memory leaks
+            cleanup() {
+                // Clear auto-save interval
+                if (this.autoSaveInterval) {
+                    clearInterval(this.autoSaveInterval);
+                    this.autoSaveInterval = null;
+                }
+                
+                // Remove event listener
+                if (this.beforeUnloadHandler) {
+                    window.removeEventListener('beforeunload', this.beforeUnloadHandler);
+                    this.beforeUnloadHandler = null;
+                }
+                
+                // Clear AI content cache
+                if (window.aiContentCache) {
+                    window.aiContentCache = null;
+                }
             },
 
             saveToLocalStorage() {
@@ -2428,17 +2507,28 @@ Always prioritize brevity while maintaining quality.`;
 
             updateWordCount() {
                 const content = this.nodes.htmlInput.value;
-                const words = content.trim() ? content.match(/\S+/g).length : 0;
+                const words = content.trim() ? (content.match(/\S+/g) || []).length : 0;
                 const chars = content.length;
                 
                 document.getElementById('word-count').textContent = `Words: ${words}`;
                 document.getElementById('char-count').textContent = `Characters: ${chars}`;
             },
 
-            showNotification(message) {
-                this.nodes.copyFeedback.textContent = message;
-                this.nodes.copyFeedback.classList.remove('opacity-0');
-                setTimeout(() => this.nodes.copyFeedback.classList.add('opacity-0'), 2000);
+            showNotification(message, type = 'success') {
+                // Use shared utility if available
+                if (window.EmailEditorUtils?.showNotification) {
+                    window.EmailEditorUtils.showNotification(message, type);
+                    return;
+                }
+                
+                // Fallback to original implementation
+                const feedback = this.nodes.copyFeedback || document.getElementById('copy-feedback');
+                if (feedback) {
+                    feedback.textContent = message;
+                    feedback.classList.remove('opacity-0');
+                    const duration = window.EMAIL_EDITOR_CONSTANTS?.COPY_FEEDBACK_DURATION_MS || 2000;
+                    setTimeout(() => feedback.classList.add('opacity-0'), duration);
+                }
             },
 
             // Keyboard shortcuts
@@ -2716,18 +2806,23 @@ Always prioritize brevity while maintaining quality.`;
                     );
                     this.showNotification('Spam words rewritten');
                 }
-            } catch (err) {
-                console.error('Spam Rewrite Error:', err);
-                this.showAIError('Failed to rewrite spam words. Try fewer terms or check your API key.');
+            } catch (error) {
+                const errorMsg = error.message?.includes('API') || error.message?.includes('key')
+                    ? 'Invalid API key or quota exceeded. Please check your Gemini API key in Settings.'
+                    : error.message?.includes('network') || error.message?.includes('fetch')
+                    ? 'Network error. Please check your internet connection and try again.'
+                    : `Failed to rewrite spam words: ${error.message || 'Unknown error'}. Try with fewer terms.`;
+                this.showAIError(errorMsg, error);
             }
         };
 
         EmailEditor.collectCurrentSpamKeywords = function() {
             const set = new Set();
             // marks exist only in preview; ensure latest
+            // Collect the actual matched text content, not the keyword label
             this.nodes.emailPreview.querySelectorAll('mark[data-spam-keyword]').forEach(m => {
-                const k = (m.getAttribute('data-spam-keyword') || '').trim();
-                if (k) set.add(k);
+                const actualText = (m.textContent || '').trim();
+                if (actualText) set.add(actualText);
             });
             return Array.from(set);
         };
