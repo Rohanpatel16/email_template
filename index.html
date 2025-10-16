@@ -2923,57 +2923,106 @@ Always prioritize brevity while maintaining quality.`;
             // Remove marks to avoid replacing inside <mark>
             this.clearSpamMarks(this.nodes.emailPreview);
 
-            // Collect text nodes
-            const walker = document.createTreeWalker(this.nodes.emailPreview, NodeFilter.SHOW_TEXT, {
-                acceptNode: (node) => {
-                    if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
-                    const parent = node.parentElement;
-                    if (!parent) return NodeFilter.FILTER_REJECT;
-                    const tag = parent.tagName;
-                    if (tag === 'SCRIPT' || tag === 'STYLE') return NodeFilter.FILTER_REJECT;
-                    return NodeFilter.FILTER_ACCEPT;
-                }
-            });
-            const nodes = [];
-            let n;
-            while ((n = walker.nextNode())) nodes.push(n);
-
             const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const toQuoteVariants = (s) => [
                 s,
-                s.replace(/'/g, '’'),
-                s.replace(/’/g, "'")
+                s.replace(/'/g, '\u2019'),
+                s.replace(/'/g, "'")
             ];
             const toFlexibleSpace = (s) => s.replace(/\s+/g, '\\s+');
             const isWordLike = (s) => /^(?:[\p{L}\p{N}_]+)$/u.test(s);
+            
             let count = 0;
-            nodes.forEach(node => {
-                let text = node.nodeValue;
-                mapping.forEach(({ from, to }) => {
-                    if (!from || typeof to !== 'string') return;
-                    const candidates = toQuoteVariants(from);
-                    let replacedThisTerm = false;
-                    for (const candidate of candidates) {
-                        const beforeCandidate = text;
-                        if (isWordLike(candidate)) {
-                            // word-like: use word boundaries
-                            const pat = new RegExp(`\\b${escapeRegex(candidate)}\\b`, 'gi');
-                            text = text.replace(pat, () => { count++; replacedThisTerm = true; return to; });
-                        } else {
-                            // phrase-like: flexible whitespace, no word boundaries
-                            const pat = new RegExp(toFlexibleSpace(escapeRegex(candidate)), 'gi');
-                            text = text.replace(pat, () => { count++; replacedThisTerm = true; return to; });
+            
+            // Strategy 1: Try whole innerHTML replacement for multi-node phrases
+            let innerHTML = this.nodes.emailPreview.innerHTML;
+            const originalInnerHTML = innerHTML;
+            
+            mapping.forEach(({ from, to }) => {
+                if (!from || typeof to !== 'string') return;
+                
+                const candidates = toQuoteVariants(from);
+                let replacedInHTML = false;
+                
+                for (const candidate of candidates) {
+                    if (isWordLike(candidate)) {
+                        // Single word: use word boundaries
+                        const pat = new RegExp(`\\b${escapeRegex(candidate)}\\b`, 'gi');
+                        const matches = innerHTML.match(pat);
+                        if (matches) {
+                            innerHTML = innerHTML.replace(pat, to);
+                            count += matches.length;
+                            replacedInHTML = true;
+                            break;
                         }
-                        if (text !== beforeCandidate) break;
+                    } else {
+                        // Phrase: flexible whitespace, handles multiple nodes
+                        const pat = new RegExp(toFlexibleSpace(escapeRegex(candidate)), 'gi');
+                        const matches = innerHTML.match(pat);
+                        if (matches) {
+                            innerHTML = innerHTML.replace(pat, to);
+                            count += matches.length;
+                            replacedInHTML = true;
+                            break;
+                        }
                     }
-                    if (!replacedThisTerm) {
-                        // final fallback: literal case-insensitive replace
-                        const fallback = new RegExp(escapeRegex(from), 'gi');
-                        text = text.replace(fallback, () => { count++; return to; });
+                }
+                
+                // Fallback: case-insensitive literal match
+                if (!replacedInHTML) {
+                    const fallback = new RegExp(escapeRegex(from), 'gi');
+                    const matches = innerHTML.match(fallback);
+                    if (matches) {
+                        innerHTML = innerHTML.replace(fallback, to);
+                        count += matches.length;
+                    }
+                }
+            });
+            
+            // Apply the updated HTML if changes were made
+            if (innerHTML !== originalInnerHTML) {
+                this.nodes.emailPreview.innerHTML = innerHTML;
+            } else {
+                // Strategy 2: Fallback to node-by-node replacement for edge cases
+                const walker = document.createTreeWalker(this.nodes.emailPreview, NodeFilter.SHOW_TEXT, {
+                    acceptNode: (node) => {
+                        if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+                        const parent = node.parentElement;
+                        if (!parent) return NodeFilter.FILTER_REJECT;
+                        const tag = parent.tagName;
+                        if (tag === 'SCRIPT' || tag === 'STYLE') return NodeFilter.FILTER_REJECT;
+                        return NodeFilter.FILTER_ACCEPT;
                     }
                 });
-                node.nodeValue = text;
-            });
+                const nodes = [];
+                let n;
+                while ((n = walker.nextNode())) nodes.push(n);
+
+                nodes.forEach(node => {
+                    let text = node.nodeValue;
+                    mapping.forEach(({ from, to }) => {
+                        if (!from || typeof to !== 'string') return;
+                        const candidates = toQuoteVariants(from);
+                        let replacedThisTerm = false;
+                        for (const candidate of candidates) {
+                            const beforeCandidate = text;
+                            if (isWordLike(candidate)) {
+                                const pat = new RegExp(`\\b${escapeRegex(candidate)}\\b`, 'gi');
+                                text = text.replace(pat, () => { count++; replacedThisTerm = true; return to; });
+                            } else {
+                                const pat = new RegExp(toFlexibleSpace(escapeRegex(candidate)), 'gi');
+                                text = text.replace(pat, () => { count++; replacedThisTerm = true; return to; });
+                            }
+                            if (text !== beforeCandidate) break;
+                        }
+                        if (!replacedThisTerm) {
+                            const fallback = new RegExp(escapeRegex(from), 'gi');
+                            text = text.replace(fallback, () => { count++; return to; });
+                        }
+                    });
+                    node.nodeValue = text;
+                });
+            }
 
             // Re-apply spam highlights post-change
             this.highlightSpamInPreview();
@@ -2985,13 +3034,70 @@ Always prioritize brevity while maintaining quality.`;
             const html = this.nodes.htmlInput.value || '';
             if (!html || !Array.isArray(mapping) || mapping.length === 0) return 0;
 
-            const container = document.createElement('div');
-            container.innerHTML = html;
-
             const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const toQuoteVariants = (s) => [s, s.replace(/'/g, '’'), s.replace(/’/g, "'")];
+            const toQuoteVariants = (s) => [
+                s,
+                s.replace(/'/g, '\u2019'),
+                s.replace(/'/g, "'")
+            ];
             const toFlexibleSpace = (s) => s.replace(/\s+/g, '\\s+');
             const isWordLike = (s) => /^(?:[\p{L}\p{N}_]+)$/u.test(s);
+
+            let count = 0;
+            
+            // Strategy 1: Try direct HTML string replacement for phrases
+            let updatedHTML = html;
+            const originalHTML = html;
+            
+            mapping.forEach(({ from, to }) => {
+                if (!from || typeof to !== 'string') return;
+                
+                const candidates = toQuoteVariants(from);
+                let replacedInHTML = false;
+                
+                for (const candidate of candidates) {
+                    if (isWordLike(candidate)) {
+                        // Single word: use word boundaries
+                        const pat = new RegExp(`\\b${escapeRegex(candidate)}\\b`, 'gi');
+                        const matches = updatedHTML.match(pat);
+                        if (matches) {
+                            updatedHTML = updatedHTML.replace(pat, to);
+                            count += matches.length;
+                            replacedInHTML = true;
+                            break;
+                        }
+                    } else {
+                        // Phrase: flexible whitespace
+                        const pat = new RegExp(toFlexibleSpace(escapeRegex(candidate)), 'gi');
+                        const matches = updatedHTML.match(pat);
+                        if (matches) {
+                            updatedHTML = updatedHTML.replace(pat, to);
+                            count += matches.length;
+                            replacedInHTML = true;
+                            break;
+                        }
+                    }
+                }
+                
+                // Fallback: case-insensitive literal match
+                if (!replacedInHTML) {
+                    const fallback = new RegExp(escapeRegex(from), 'gi');
+                    const matches = updatedHTML.match(fallback);
+                    if (matches) {
+                        updatedHTML = updatedHTML.replace(fallback, to);
+                        count += matches.length;
+                    }
+                }
+            });
+            
+            if (updatedHTML !== originalHTML) {
+                this.nodes.htmlInput.value = updatedHTML;
+                return count;
+            }
+            
+            // Strategy 2: Fallback to DOM-based replacement
+            const container = document.createElement('div');
+            container.innerHTML = html;
 
             const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
                 acceptNode: (node) => {
@@ -3007,7 +3113,6 @@ Always prioritize brevity while maintaining quality.`;
             let n;
             while ((n = walker.nextNode())) nodes.push(n);
 
-            let count = 0;
             nodes.forEach(node => {
                 let text = node.nodeValue;
                 mapping.forEach(({ from, to }) => {
