@@ -20,10 +20,40 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <style>
+        /* Custom Color Palette */
+        :root {
+            --color-black: #080708;
+            --color-carrot-orange: #e89005;
+            --color-poppy: #df2935;
+            --color-blue-violet: #8338ec;
+            --color-platinum: #e6e8e6;
+            --color-platinum-dark: #d0d2d0;
+            --color-white: #ffffff;
+            --color-light-bg: #f8f9fa;
+            
+            /* Semantic colors */
+            --color-primary: var(--color-blue-violet);
+            --color-success: var(--color-carrot-orange);
+            --color-warning: var(--color-poppy);
+            --color-text: var(--color-black);
+            --color-text-muted: #4a4a4a;
+            --color-border: var(--color-platinum);
+            --color-bg: var(--color-light-bg);
+            
+            /* Transitions */
+            --transition-smooth: all 0.3s ease-in-out;
+            --transition-fast: all 0.15s ease-in-out;
+        }
+        
+        * {
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+        }
+        
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f1f5f9; /* slate-100 */
-            padding-bottom: 60px; /* Space for status bar */
+            background: linear-gradient(135deg, #f8f9fa 0%, var(--color-platinum) 100%);
+            padding-bottom: 70px; /* Space for status bar */
+            color: var(--color-text);
         }
         
         /* Mobile responsiveness improvements */
@@ -79,30 +109,72 @@
             }
         }
         .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
+            width: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
+            background: var(--color-platinum);
+            border-radius: 5px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #94a3b8; /* slate-400 */
-            border-radius: 4px;
+            background: var(--color-blue-violet);
+            border-radius: 5px;
+            transition: var(--transition-fast);
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #64748b; /* slate-500 */
+            background: var(--color-carrot-orange);
         }
         #email-preview:focus {
-            outline: 2px solid #3b82f6; /* blue-500 */
+            outline: 2px solid var(--color-blue-violet);
             outline-offset: 2px;
+            box-shadow: 0 0 0 4px rgba(131, 56, 236, 0.1);
         }
         .toolbar-btn {
-            @apply bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-2 px-3 rounded-lg transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+            background: var(--color-platinum);
+            color: var(--color-text);
+            font-weight: 500;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            transition: var(--transition-fast);
+            border: 1px solid transparent;
+        }
+        .toolbar-btn:hover:not(:disabled) {
+            background: var(--color-blue-violet);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(131, 56, 236, 0.3);
+        }
+        .toolbar-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
         }
         .toolbar-select {
-            @apply bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-2 px-3 rounded-lg transition-colors duration-150 appearance-none cursor-pointer;
+            background: var(--color-platinum);
+            color: var(--color-text);
+            font-weight: 500;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            transition: var(--transition-fast);
+            appearance: none;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .toolbar-select:hover {
+            background: var(--color-platinum-dark);
+            border-color: var(--color-blue-violet);
         }
         .input-field {
-             @apply w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: white;
+            border: 2px solid var(--color-platinum);
+            border-radius: 0.75rem;
+            transition: var(--transition-fast);
+            color: var(--color-text);
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--color-blue-violet);
+            box-shadow: 0 0 0 4px rgba(131, 56, 236, 0.1);
         }
         input[type="color"]::-webkit-color-swatch-wrapper {
             padding: 0;
@@ -119,7 +191,8 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #0f172a; /* slate-900 */
+            background-color: var(--color-black);
+            border-radius: 0.75rem;
         }
         .hwt-backdrop {
             position: absolute;
@@ -147,79 +220,193 @@
             display: block;
             position: relative;
             margin: 0;
-            color: #cbd5e1; /* slate-300 */
+            color: var(--color-platinum);
             background-color: transparent;
             resize: none;
             width: 100%;
             height: 100%;
+            font-size: 0.875rem;
+            line-height: 1.6;
         }
         mark {
-            padding: 0;
-            border-radius: 3px;
+            padding: 0 2px;
+            border-radius: 4px;
             color: transparent;
             -webkit-text-fill-color: transparent;
         }
-        mark.spam-category-urgency { background-color: rgba(239, 68, 68, 0.4); } /* red-500 */
-        mark.spam-category-shady { background-color: rgba(244, 114, 182, 0.4); } /* pink-400 */
-        mark.spam-category-money { background-color: rgba(252, 211, 77, 0.4); } /* amber-300 */
-        mark.spam-category-overpromise { background-color: rgba(251, 146, 60, 0.4); } /* orange-400 */
-        mark.spam-category-unnatural { background-color: rgba(148, 163, 184, 0.4); } /* slate-400 */
+        mark.spam-category-urgency { 
+            background-color: rgba(223, 41, 53, 0.5);
+            border-bottom: 2px solid var(--color-poppy);
+        }
+        mark.spam-category-shady { 
+            background-color: rgba(131, 56, 236, 0.3);
+            border-bottom: 2px solid var(--color-blue-violet);
+        }
+        mark.spam-category-money { 
+            background-color: rgba(232, 144, 5, 0.4);
+            border-bottom: 2px solid var(--color-carrot-orange);
+        }
+        mark.spam-category-overpromise { 
+            background-color: rgba(232, 144, 5, 0.3);
+            border-bottom: 2px solid var(--color-carrot-orange);
+        }
+        mark.spam-category-unnatural { 
+            background-color: rgba(131, 56, 236, 0.2);
+            border-bottom: 2px solid var(--color-blue-violet);
+        }
         /* Make preview text inside marks visible */
         #email-preview mark { color: inherit; -webkit-text-fill-color: inherit; }
         /* Hide highlights in the left source editor overlay */
         .hwt-backdrop { display: none !important; }
 
-        #spam-checker--aside table { @apply w-full mb-4 text-sm; }
-        #spam-checker--aside td { @apply py-1 text-slate-600; }
-        #spam-checker--aside td:last-child { @apply font-medium text-slate-800 text-right; }
-        #spam-checker--aside ul { @apply list-none space-y-1 text-sm; }
-        #spam-checker--aside li { @apply flex items-center gap-2 text-slate-600;}
-        #spam-checker--aside li span { @apply font-medium text-slate-800; }
-        #spam-checker--aside .text-great { @apply text-green-600 font-semibold; }
-        #spam-checker--aside .text-okay { @apply text-blue-600 font-semibold; }
-        #spam-checker--aside .text-poor { @apply text-red-600 font-semibold; }
+        #spam-checker--aside table { 
+            width: 100%;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+        #spam-checker--aside td { 
+            padding: 0.5rem 0;
+            color: var(--color-text-muted);
+        }
+        #spam-checker--aside td:last-child { 
+            font-weight: 600;
+            color: var(--color-text);
+            text-align: right;
+        }
+        #spam-checker--aside ul { 
+            list-style: none;
+            margin: 0.5rem 0;
+            font-size: 0.875rem;
+        }
+        #spam-checker--aside li { 
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--color-text-muted);
+            margin: 0.25rem 0;
+        }
+        #spam-checker--aside li span { 
+            font-weight: 600;
+            color: var(--color-text);
+        }
+        #spam-checker--aside .text-great { 
+            color: var(--color-carrot-orange);
+            font-weight: 700;
+        }
+        #spam-checker--aside .text-okay { 
+            color: var(--color-blue-violet);
+            font-weight: 700;
+        }
+        #spam-checker--aside .text-poor { 
+            color: var(--color-poppy);
+            font-weight: 700;
+        }
         
         /* AI Response Styling */
         .ai-action-btn {
-            @apply px-3 py-1.5 text-xs font-medium rounded-md transition-colors duration-150;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            transition: var(--transition-fast);
+            border: none;
+            cursor: pointer;
         }
         .ai-btn-copy {
-            @apply bg-slate-200 hover:bg-slate-300 text-slate-700;
+            background: var(--color-platinum);
+            color: var(--color-text);
+        }
+        .ai-btn-copy:hover {
+            background: var(--color-platinum-dark);
+            transform: translateY(-1px);
         }
         .ai-btn-apply {
-            @apply bg-green-600 hover:bg-green-700 text-white;
+            background: var(--color-carrot-orange);
+            color: white;
+        }
+        .ai-btn-apply:hover {
+            background: #d17f04;
+            box-shadow: 0 4px 12px rgba(232, 144, 5, 0.4);
+            transform: translateY(-1px);
         }
         .ai-btn-use {
-            @apply bg-blue-600 hover:bg-blue-700 text-white;
+            background: var(--color-blue-violet);
+            color: white;
+        }
+        .ai-btn-use:hover {
+            background: #6d2bc5;
+            box-shadow: 0 4px 12px rgba(131, 56, 236, 0.4);
+            transform: translateY(-1px);
         }
         .ai-btn-copy-small {
-            @apply bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 py-1;
+            background: var(--color-platinum);
+            color: var(--color-text-muted);
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+        }
+        .ai-btn-copy-small:hover {
+            background: var(--color-platinum-dark);
         }
         
         .ai-content-card {
-            @apply bg-white border border-gray-200 rounded-lg p-4 text-sm text-gray-700 leading-relaxed;
+            background: white;
+            border: 2px solid var(--color-platinum);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            font-size: 0.875rem;
+            color: var(--color-text);
+            line-height: 1.7;
+            transition: var(--transition-fast);
+        }
+        .ai-content-card:hover {
+            border-color: var(--color-blue-violet);
+            box-shadow: 0 4px 16px rgba(131, 56, 236, 0.1);
         }
         
         .ai-subject-card {
-            @apply bg-white border border-gray-200 rounded-lg p-3 mb-3 hover:border-blue-300 transition-colors;
+            background: white;
+            border: 2px solid var(--color-platinum);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: var(--transition-fast);
+        }
+        .ai-subject-card:hover {
+            border-color: var(--color-carrot-orange);
+            box-shadow: 0 4px 16px rgba(232, 144, 5, 0.15);
+            transform: translateY(-2px);
         }
         .ai-subject-header {
-            @apply flex items-start justify-between mb-2;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
         }
         .ai-subject-number {
-            @apply font-semibold text-gray-500 mr-2 flex-shrink-0;
+            font-weight: 700;
+            color: var(--color-blue-violet);
+            margin-right: 0.5rem;
+            flex-shrink: 0;
         }
         .ai-subject-text {
-            @apply flex-grow text-gray-800 font-medium;
+            flex-grow: 1;
+            color: var(--color-text);
+            font-weight: 600;
         }
         .ai-subject-meta {
-            @apply text-xs text-gray-500 flex-shrink-0 ml-2;
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+            flex-shrink: 0;
+            margin-left: 0.5rem;
         }
         .ai-subject-actions {
-            @apply flex items-center gap-2;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         .ai-spam-indicator {
-            @apply ml-1 text-xs;
+            margin-left: 0.25rem;
+            font-size: 0.75rem;
         }
         
         .ai-suggestions-content {
@@ -236,16 +423,20 @@
         }
         
         .ai-response-optimize .ai-content-card {
-            @apply border-green-200 bg-green-50;
+            border-color: var(--color-carrot-orange);
+            background: linear-gradient(135deg, #fff9f0 0%, white 100%);
         }
         .ai-response-suggestions .ai-content-card {
-            @apply border-blue-200 bg-blue-50;
+            border-color: var(--color-blue-violet);
+            background: linear-gradient(135deg, #f5f0ff 0%, white 100%);
         }
         .ai-response-tone .ai-content-card {
-            @apply border-purple-200 bg-purple-50;
+            border-color: var(--color-blue-violet);
+            background: linear-gradient(135deg, #f5f0ff 0%, white 100%);
         }
         .ai-response-subjects .ai-subject-card {
-            @apply border-orange-200 bg-orange-50;
+            border-color: var(--color-carrot-orange);
+            background: linear-gradient(135deg, #fff9f0 0%, white 100%);
         }
         
         .ai-suggestions-content ul {
@@ -266,190 +457,332 @@
         .ai-content-card ol {
             @apply list-decimal ml-6 space-y-1;
         }
+        
+        /* Animation keyframes */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+        
+        /* Apply animations */
+        .container > div {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        /* Enhanced button focus states */
+        button:focus-visible {
+            outline: 2px solid var(--color-blue-violet);
+            outline-offset: 2px;
+        }
+        
+        /* Smooth link hover effects */
+        a:hover {
+            opacity: 0.8;
+        }
+        
+        /* Enhanced card shadows on hover */
+        .bg-white:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+        
+        /* Loading spinner */
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        
+        /* Gradient text animation */
+        @keyframes gradient-shift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        /* Enhanced placeholder styling */
+        ::placeholder {
+            color: var(--color-text-muted);
+            opacity: 0.6;
+        }
+        
+        /* Better selection styling */
+        ::selection {
+            background: var(--color-blue-violet);
+            color: white;
+        }
+        
+        /* Smooth page transitions */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Auto-style links in email preview */
+        #email-preview a {
+            color: #0400ff !important;
+            text-decoration: underline !important;
+        }
+        
+        /* Tone preset buttons */
+        .tone-preset:hover {
+            background: var(--color-carrot-orange) !important;
+            color: white !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(232, 144, 5, 0.3);
+        }
+        
+        /* Template list items */
+        .template-item {
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            border: 2px solid var(--color-platinum);
+            background: white;
+            transition: var(--transition-fast);
+            cursor: pointer;
+        }
+        .template-item:hover {
+            border-color: var(--color-blue-violet);
+            background: var(--color-light-bg);
+            transform: translateX(4px);
+        }
     </style>
 </head>
 <body class="text-slate-800">
 
+    <!-- Modern Header -->
+    <div class="sticky top-0 z-50 backdrop-blur-lg bg-white/80 border-b-2 shadow-sm" style="border-color: var(--color-platinum);">
+        <div class="container mx-auto px-4 md:px-8 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, var(--color-blue-violet) 0%, var(--color-carrot-orange) 100%);">
+                        <i class="fas fa-envelope text-white text-lg"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold" style="background: linear-gradient(135deg, var(--color-blue-violet), var(--color-carrot-orange)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; color: transparent;">
+                        Email Template Editor
+                    </h1>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="settings-btn" class="px-4 py-2 rounded-lg font-medium transition-all" style="background: var(--color-platinum); color: var(--color-text);">
+                        <i class="fas fa-cog mr-2"></i>Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="container mx-auto p-4 md:p-8">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Left Column: Input & Controls -->
-            <div class="bg-white p-6 rounded-2xl shadow-lg flex flex-col space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-xl flex flex-col space-y-6" style="border: 2px solid var(--color-platinum);">
                 <div>
                     <h2 class="text-xl font-semibold mb-4 text-slate-900">Define Template Variables</h2>
                     <div id="variables-container" class="space-y-3">
                         <!-- Dynamic variables will be injected here -->
                     </div>
                     <div class="flex flex-wrap gap-2 mt-3">
-                        <button id="add-variable-btn" class="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+                        <button id="add-variable-btn" class="text-sm font-semibold transition-all px-3 py-1.5 rounded-lg" style="color: var(--color-blue-violet);">
                             <i class="fas fa-plus-circle mr-1"></i> Add Variable
                         </button>
-                        <button id="save-template-btn" class="text-sm font-semibold text-green-600 hover:text-green-700 transition-colors">
+                        <button id="save-template-btn" class="text-sm font-semibold transition-all px-3 py-1.5 rounded-lg" style="color: var(--color-carrot-orange);">
                             <i class="fas fa-save mr-1"></i> Save Template
                         </button>
-                        <button id="load-template-btn" class="text-sm font-semibold text-purple-600 hover:text-purple-700 transition-colors">
+                        <button id="load-template-btn" class="text-sm font-semibold transition-all px-3 py-1.5 rounded-lg" style="color: var(--color-blue-violet);">
                             <i class="fas fa-folder-open mr-1"></i> Load Template
                         </button>
-                        <a href="templates.html" id="manage-templates-btn" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors">
+                        <a href="templates.html" id="manage-templates-btn" class="text-sm font-semibold transition-all px-3 py-1.5 rounded-lg" style="color: var(--color-blue-violet);">
                             <i class="fas fa-database mr-1"></i> Templates Library
                         </a>
-                        <button id="clear-all-btn" class="text-sm font-semibold text-red-600 hover:text-red-700 transition-colors">
+                        <button id="clear-all-btn" class="text-sm font-semibold transition-all px-3 py-1.5 rounded-lg" style="color: var(--color-poppy);">
                             <i class="fas fa-trash mr-1"></i> Clear All
-                        </button>
-                        <button id="settings-btn" class="text-sm font-semibold text-slate-600 hover:text-slate-700 transition-colors">
-                            <i class="fas fa-cog mr-1"></i> Settings
                         </button>
                     </div>
                 </div>
 
                 <div class="flex flex-col flex-grow">
-                    <h2 class="text-xl font-semibold mb-4 text-slate-900">Edit Email HTML & Check Spam Score</h2>
-                    <div class="relative flex-grow h-full bg-slate-900 rounded-lg border border-slate-700 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition">
-                        <textarea id="spam-checker--textarea" class="w-full h-full p-4 font-mono text-sm custom-scrollbar" style="min-height: 400px;"></textarea>
-                        <button id="copy-html-btn" class="absolute top-3 right-3 bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold py-1 px-2 rounded-md transition-colors">
-                            Copy HTML
+                    <h2 class="text-xl font-semibold mb-4" style="color: var(--color-text);">Edit Email HTML & Check Spam Score</h2>
+                    <div class="relative flex-grow h-full rounded-xl border-2 focus-within:ring-2 transition-all" style="background: var(--color-black); border-color: var(--color-platinum);">
+                        <textarea id="spam-checker--textarea" class="w-full h-full p-4 font-mono text-sm custom-scrollbar" style="min-height: 400px; background: transparent; color: var(--color-platinum);"></textarea>
+                        <button id="copy-html-btn" class="absolute top-3 right-3 text-white text-xs font-semibold py-2 px-3 rounded-lg transition-all hover:transform hover:-translate-y-0.5" style="background: var(--color-blue-violet);">
+                            <i class="fas fa-copy mr-1"></i>Copy HTML
                         </button>
                     </div>
-                    <div id="spam-checker--aside" class="mt-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
-                        <i>Add content to get your spam score.</i>
+                    <div id="spam-checker--aside" class="mt-4 p-4 rounded-xl border-2" style="background: white; border-color: var(--color-platinum);">
+                        <i style="color: var(--color-text-muted);">Add content to get your spam score.</i>
                     </div>
                     
                     <!-- Email Analytics Panel -->
-                    <div class="mt-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
-                        <h3 class="text-lg font-semibold text-green-900 mb-3 flex items-center">
-                            <i class="fas fa-chart-line mr-2"></i>Email Analytics
+                    <div class="mt-4 p-5 rounded-xl border-2 shadow-lg transition-all" style="background: linear-gradient(135deg, #fff9f0 0%, white 100%); border-color: var(--color-carrot-orange);">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center" style="color: var(--color-text);">
+                            <i class="fas fa-chart-line mr-2" style="color: var(--color-carrot-orange);"></i>Email Analytics
                         </h3>
-                        <div class="grid grid-cols-2 gap-4 text-sm">
-                            <div class="bg-white p-3 rounded-lg">
-                                <div class="text-gray-600">Readability Score</div>
-                                <div id="readability-score" class="text-2xl font-bold text-green-600">-</div>
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div class="bg-white p-4 rounded-xl border-2 transition-all hover:shadow-md hover:-translate-y-0.5" style="border-color: var(--color-platinum);">
+                                <div style="color: var(--color-text-muted);">Readability Score</div>
+                                <div id="readability-score" class="text-2xl font-bold mt-1" style="color: var(--color-carrot-orange);">-</div>
                             </div>
-                            <div class="bg-white p-3 rounded-lg">
-                                <div class="text-gray-600">Engagement Score</div>
-                                <div id="engagement-score" class="text-2xl font-bold text-blue-600">-</div>
+                            <div class="bg-white p-4 rounded-xl border-2 transition-all hover:shadow-md hover:-translate-y-0.5" style="border-color: var(--color-platinum);">
+                                <div style="color: var(--color-text-muted);">Engagement Score</div>
+                                <div id="engagement-score" class="text-2xl font-bold mt-1" style="color: var(--color-blue-violet);">-</div>
                             </div>
-                            <div class="bg-white p-3 rounded-lg">
-                                <div class="text-gray-600">Spam Risk</div>
-                                <div id="spam-risk" class="text-2xl font-bold text-orange-600">-</div>
+                            <div class="bg-white p-4 rounded-xl border-2 transition-all hover:shadow-md hover:-translate-y-0.5" style="border-color: var(--color-platinum);">
+                                <div style="color: var(--color-text-muted);">Spam Risk</div>
+                                <div id="spam-risk" class="text-2xl font-bold mt-1" style="color: var(--color-poppy);">-</div>
                             </div>
-                            <div class="bg-white p-3 rounded-lg">
-                                <div class="text-gray-600">Optimal Length</div>
-                                <div id="length-status" class="text-sm font-medium text-purple-600">-</div>
+                            <div class="bg-white p-4 rounded-xl border-2 transition-all hover:shadow-md hover:-translate-y-0.5" style="border-color: var(--color-platinum);">
+                                <div style="color: var(--color-text-muted);">Optimal Length</div>
+                                <div id="length-status" class="text-sm font-medium mt-1" style="color: var(--color-blue-violet);">-</div>
                             </div>
                         </div>
-                        <div class="mt-3">
-                            <button id="analyze-email-btn" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
+                        <div class="mt-4">
+                            <button id="analyze-email-btn" class="w-full text-white py-3 px-4 rounded-xl text-sm font-semibold transition-all hover:shadow-lg hover:-translate-y-0.5" style="background: var(--color-carrot-orange);">
                                 <i class="fas fa-analytics mr-2"></i>Analyze Email Performance
                             </button>
                         </div>
                     </div>
                     
                     <!-- AI Enhancement Panel -->
-                    <div class="mt-6 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200">
-                        <h3 class="text-lg font-semibold text-purple-900 mb-3 flex items-center">
-                            <i class="fas fa-magic mr-2"></i>AI-Powered Enhancements
+                    <div class="mt-6 p-5 rounded-xl border-2 shadow-lg transition-all" style="background: linear-gradient(135deg, #f5f0ff 0%, white 100%); border-color: var(--color-blue-violet);">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center" style="color: var(--color-text);">
+                            <i class="fas fa-magic mr-2" style="color: var(--color-blue-violet);"></i>AI-Powered Enhancements
                         </h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <button id="ai-optimize-btn" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center">
+                            <button id="ai-optimize-btn" class="text-white px-4 py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center hover:shadow-lg hover:-translate-y-0.5" style="background: var(--color-blue-violet);">
                                 <i class="fas fa-wand-magic-sparkles mr-2"></i>Optimize Content
                             </button>
-                            <button id="ai-suggest-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center">
+                            <button id="ai-suggest-btn" class="text-white px-4 py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center hover:shadow-lg hover:-translate-y-0.5" style="background: var(--color-blue-violet);">
                                 <i class="fas fa-lightbulb mr-2"></i>Get Suggestions
                             </button>
-                            <button id="ai-tone-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center">
+                            <button id="ai-tone-btn" class="text-white px-4 py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center hover:shadow-lg hover:-translate-y-0.5" style="background: var(--color-carrot-orange);">
                                 <i class="fas fa-palette mr-2"></i>Adjust Tone
                             </button>
-                            <button id="ai-subject-btn" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center">
+                            <button id="ai-subject-btn" class="text-white px-4 py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center hover:shadow-lg hover:-translate-y-0.5" style="background: var(--color-carrot-orange);">
                                 <i class="fas fa-heading mr-2"></i>Generate Subject
                             </button>
-                            <button id="ai-rewrite-spam-btn" class="bg-pink-600 hover:bg-pink-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center">
+                            <button id="ai-rewrite-spam-btn" class="text-white px-4 py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center hover:shadow-lg hover:-translate-y-0.5" style="background: var(--color-poppy);">
                                 <i class="fas fa-broom mr-2"></i>Rewrite Spam Words
                             </button>
                         </div>
-                        <div id="ai-loading" class="hidden mt-3 p-3 bg-blue-100 rounded-lg">
+                        <div id="ai-loading" class="hidden mt-4 p-4 rounded-xl" style="background: rgba(131, 56, 236, 0.1); border: 2px solid var(--color-blue-violet);">
                             <div class="flex items-center">
-                                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                                <span class="text-blue-700 text-sm">AI is working...</span>
+                                <div class="animate-spin rounded-full h-5 w-5 border-b-2 mr-3" style="border-color: var(--color-blue-violet);"></div>
+                                <span class="text-sm font-medium" style="color: var(--color-blue-violet);">AI is working...</span>
                             </div>
                         </div>
-                        <div id="ai-response" class="hidden mt-3 p-3 bg-white rounded-lg border border-purple-200">
-                            <div class="flex justify-between items-start mb-2">
-                                <h4 class="font-medium text-gray-800">AI Response</h4>
-                                <button id="copy-ai-response" class="text-gray-500 hover:text-gray-700">
+                        <div id="ai-response" class="hidden mt-4 p-4 bg-white rounded-xl border-2" style="border-color: var(--color-blue-violet);">
+                            <div class="flex justify-between items-start mb-3">
+                                <h4 class="font-semibold" style="color: var(--color-text);">AI Response</h4>
+                                <button id="copy-ai-response" class="transition-colors" style="color: var(--color-text-muted);">
                                     <i class="fas fa-copy"></i>
                                 </button>
                             </div>
-                            <div id="ai-content" class="text-sm text-gray-700"></div>
+                            <div id="ai-content" class="text-sm" style="color: var(--color-text);"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Right Column: Visual Preview -->
-            <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden" style="border: 2px solid var(--color-platinum);">
                 <div class="p-6">
                     <!-- Fake Email Client UI -->
-                    <div class="flex items-center space-x-4 pb-4">
-                        <div class="w-10 h-10 bg-blue-500 text-white flex items-center justify-center rounded-full font-bold text-lg">
+                    <div class="flex items-center space-x-4 pb-4 border-b-2" style="border-color: var(--color-platinum);">
+                        <div class="w-12 h-12 text-white flex items-center justify-center rounded-xl font-bold text-lg shadow-md" style="background: linear-gradient(135deg, var(--color-blue-violet) 0%, var(--color-carrot-orange) 100%);">
                             <span id="sender-initial">R</span>
                         </div>
                         <div>
-                            <p class="font-semibold text-slate-800">Rohan Patel</p>
-                            <p class="text-sm text-slate-500">To: <span id="recipient-email">recipient@example.com</span></p>
+                            <p class="font-semibold" style="color: var(--color-text);">Rohan Patel</p>
+                            <p class="text-sm" style="color: var(--color-text-muted);">To: <span id="recipient-email">recipient@example.com</span></p>
                         </div>
                     </div>
                     <!-- Subject Line Input -->
-                    <div class="mb-4">
-                        <label class="text-sm font-medium text-slate-700 mb-2 block">Subject Line:</label>
+                    <div class="mb-4 mt-4">
+                        <label class="text-sm font-semibold mb-2 block" style="color: var(--color-text);">Subject Line:</label>
                         <input type="text" id="subject-line-input" 
-                               class="w-full p-3 bg-slate-900 text-white border border-slate-700 rounded-lg font-medium text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" 
+                               class="w-full p-3 text-white border-2 rounded-xl font-medium text-base transition-all focus:ring-2" 
+                               style="background: var(--color-black); border-color: var(--color-platinum);"
                                placeholder="Enter your email subject line..."
                                value="Regarding AI Roles at {{company_name}}">
-                        <div id="subject-line-preview" class="mt-2 text-sm text-slate-600 bg-slate-100 p-2 rounded border">
-                            <span class="font-medium">Preview:</span> <span id="subject-preview-text">Regarding AI Roles at {{company_name}}</span>
+                        <div id="subject-line-preview" class="mt-2 text-sm p-3 rounded-xl border-2" style="color: var(--color-text-muted); background: var(--color-light-bg); border-color: var(--color-platinum);">
+                            <span class="font-semibold" style="color: var(--color-text);">Preview:</span> <span id="subject-preview-text">Regarding AI Roles at {{company_name}}</span>
                         </div>
                     </div>
                     
-                    <div class="mt-4 border-b border-slate-200 pb-4">
-                        <h3 class="text-xl font-bold text-slate-800">Regarding AI Roles at <span id="preview-company-name">Your Company</span></h3>
+                    <div class="mt-4 border-b-2 pb-4" style="border-color: var(--color-platinum);">
+                        <h3 class="text-xl font-bold" style="color: var(--color-text);">Regarding AI Roles at <span id="preview-company-name">Your Company</span></h3>
                     </div>
                     <!-- Toolbar -->
                     <div class="py-4">
-                        <div id="toolbar" class="flex flex-wrap items-center gap-2 p-2 bg-slate-100 rounded-lg">
+                        <div id="toolbar" class="flex flex-wrap items-center gap-2 p-3 rounded-xl border-2" style="background: var(--color-light-bg); border-color: var(--color-platinum);">
                             <button class="toolbar-btn" data-command="bold"><i class="fas fa-bold"></i></button>
                             <button class="toolbar-btn" data-command="italic"><i class="fas fa-italic"></i></button>
                             <button class="toolbar-btn" data-command="underline"><i class="fas fa-underline"></i></button>
                             <button class="toolbar-btn" data-command="strikeThrough"><i class="fas fa-strikethrough"></i></button>
                             <button class="toolbar-btn" data-command="createLink"><i class="fas fa-link"></i></button>
-                            <div class="h-6 border-l border-slate-300"></div>
+                            <div class="h-6 border-l-2" style="border-color: var(--color-platinum);"></div>
                             <button class="toolbar-btn" data-command="justifyLeft"><i class="fas fa-align-left"></i></button>
                             <button class="toolbar-btn" data-command="justifyCenter"><i class="fas fa-align-center"></i></button>
                             <button class="toolbar-btn" data-command="justifyRight"><i class="fas fa-align-right"></i></button>
-                            <div class="h-6 border-l border-slate-300"></div>
+                            <div class="h-6 border-l-2" style="border-color: var(--color-platinum);"></div>
                             <button class="toolbar-btn" data-command="insertOrderedList"><i class="fas fa-list-ol"></i></button>
                             <button class="toolbar-btn" data-command="insertUnorderedList"><i class="fas fa-list-ul"></i></button>
-                            <div class="h-6 border-l border-slate-300"></div>
+                            <div class="h-6 border-l-2" style="border-color: var(--color-platinum);"></div>
                             <select class="toolbar-select" data-command="fontName">
                                 <option value="Arial">Arial</option> <option value="Verdana">Verdana</option> <option value="Georgia">Georgia</option> <option value="Times New Roman">Times</option> <option value="Courier New">Courier</option>
                             </select>
                             <select class="toolbar-select" data-command="fontSize">
                                 <option value="1">Small</option> <option value="3" selected>Normal</option> <option value="5">Large</option> <option value="7">Huge</option>
                             </select>
-                            <div class="h-6 border-l border-slate-300"></div>
-                            <div class="flex items-center bg-slate-200 rounded-lg">
-                                <span class="px-3 text-slate-700"><i class="fas fa-palette"></i></span>
-                                <input type="color" class="w-8 h-8 bg-transparent border-l border-slate-300 cursor-pointer" data-command="foreColor" value="#000000" title="Text Color">
+                            <div class="h-6 border-l-2" style="border-color: var(--color-platinum);"></div>
+                            <div class="flex items-center rounded-lg" style="background: var(--color-platinum);">
+                                <span class="px-3" style="color: var(--color-text);"><i class="fas fa-palette"></i></span>
+                                <input type="color" class="w-8 h-8 bg-transparent border-l-2 cursor-pointer" style="border-color: var(--color-platinum-dark);" data-command="foreColor" value="#000000" title="Text Color">
                             </div>
-                            <div class="h-6 border-l border-slate-300"></div>
+                            <div class="h-6 border-l-2" style="border-color: var(--color-platinum);"></div>
                             <button class="toolbar-btn" data-command="removeFormat" title="Clear Formatting"><i class="fas fa-eraser"></i></button>
-                            <div class="h-6 border-l border-slate-300"></div>
+                            <div class="h-6 border-l-2" style="border-color: var(--color-platinum);"></div>
                             <button id="undo-btn" class="toolbar-btn" title="Undo (Ctrl+Z)"><i class="fas fa-undo"></i></button>
                             <button id="redo-btn" class="toolbar-btn" title="Redo (Ctrl+Y)"><i class="fas fa-redo"></i></button>
-                            <div class="h-6 border-l border-slate-300"></div>
+                            <div class="h-6 border-l-2" style="border-color: var(--color-platinum);"></div>
                             <button id="help-btn" class="toolbar-btn" title="Keyboard Shortcuts"><i class="fas fa-question-circle"></i></button>
                         </div>
                     </div>
                     <!-- Email Body -->
-                    <div id="email-preview" contenteditable="true" class="prose prose-sm max-w-none text-slate-700 leading-relaxed p-4 border border-slate-200 rounded-lg" style="min-height: 300px;">
+                    <div id="email-preview" contenteditable="true" class="prose prose-sm max-w-none leading-relaxed p-5 border-2 rounded-xl transition-all" style="min-height: 300px; color: var(--color-text); border-color: var(--color-platinum); background: white;">
                         <!-- Rendered HTML will go here -->
                     </div>
                 </div>
@@ -458,64 +791,266 @@
     </div>
 
     <!-- Copy to clipboard feedback message -->
-    <div id="copy-feedback" class="fixed bottom-5 right-5 bg-slate-900 text-white py-2 px-4 rounded-lg shadow-xl transition-opacity duration-300 opacity-0 pointer-events-none">
-        Copied to clipboard!
+    <div id="copy-feedback" class="fixed bottom-20 right-5 text-white py-3 px-6 rounded-xl shadow-2xl transition-all duration-300 opacity-0 pointer-events-none font-semibold" style="background: var(--color-carrot-orange);">
+        <i class="fas fa-check-circle mr-2"></i>Copied to clipboard!
+    </div>
+
+    <!-- Custom Link Modal -->
+    <div id="link-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl border-2 transform transition-all" style="border-color: var(--color-blue-violet);">
+            <div class="mb-6">
+                <div class="flex items-center mb-2">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3" style="background: linear-gradient(135deg, var(--color-blue-violet), var(--color-carrot-orange));">
+                        <i class="fas fa-link text-white"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold" style="color: var(--color-text);">Insert Link</h2>
+                </div>
+                <p class="text-sm" style="color: var(--color-text-muted);">Enter the URL you want to link to</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="link-url-input" class="block text-sm font-semibold mb-2" style="color: var(--color-text);">
+                        <i class="fas fa-globe mr-1" style="color: var(--color-blue-violet);"></i>URL
+                    </label>
+                    <input 
+                        type="url" 
+                        id="link-url-input" 
+                        class="input-field" 
+                        placeholder="https://example.com"
+                        style="border-color: var(--color-platinum);"
+                    >
+                </div>
+                
+                <div>
+                    <label for="link-text-input" class="block text-sm font-semibold mb-2" style="color: var(--color-text);">
+                        <i class="fas fa-text-width mr-1" style="color: var(--color-blue-violet);"></i>Link Text (optional)
+                    </label>
+                    <input 
+                        type="text" 
+                        id="link-text-input" 
+                        class="input-field" 
+                        placeholder="Enter link text"
+                        style="border-color: var(--color-platinum);"
+                    >
+                </div>
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+                <button id="cancel-link-btn" class="flex-1 px-6 py-3 rounded-xl font-semibold transition-all hover:shadow-md" style="background: var(--color-platinum); color: var(--color-text);">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </button>
+                <button id="insert-link-btn" class="flex-1 px-6 py-3 rounded-xl font-semibold text-white transition-all hover:shadow-lg hover:-translate-y-0.5" style="background: var(--color-blue-violet);">
+                    <i class="fas fa-check mr-2"></i>Insert Link
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Tone Modal -->
+    <div id="tone-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl border-2 transform transition-all" style="border-color: var(--color-carrot-orange);">
+            <div class="mb-6">
+                <div class="flex items-center mb-2">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3" style="background: linear-gradient(135deg, var(--color-carrot-orange), var(--color-blue-violet));">
+                        <i class="fas fa-palette text-white"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold" style="color: var(--color-text);">Adjust Tone</h2>
+                </div>
+                <p class="text-sm" style="color: var(--color-text-muted);">Choose the tone style for your email content</p>
+            </div>
+            
+            <div>
+                <label for="tone-input" class="block text-sm font-semibold mb-2" style="color: var(--color-text);">
+                    <i class="fas fa-wand-magic-sparkles mr-1" style="color: var(--color-carrot-orange);"></i>Tone Style
+                </label>
+                <input 
+                    type="text" 
+                    id="tone-input" 
+                    class="input-field" 
+                    placeholder="e.g., professional, friendly, urgent, casual"
+                    style="border-color: var(--color-platinum);"
+                >
+                <div class="mt-3 flex flex-wrap gap-2">
+                    <button class="tone-preset px-3 py-1.5 rounded-lg text-sm font-medium transition-all" style="background: var(--color-platinum); color: var(--color-text);" data-tone="professional">Professional</button>
+                    <button class="tone-preset px-3 py-1.5 rounded-lg text-sm font-medium transition-all" style="background: var(--color-platinum); color: var(--color-text);" data-tone="friendly">Friendly</button>
+                    <button class="tone-preset px-3 py-1.5 rounded-lg text-sm font-medium transition-all" style="background: var(--color-platinum); color: var(--color-text);" data-tone="urgent">Urgent</button>
+                    <button class="tone-preset px-3 py-1.5 rounded-lg text-sm font-medium transition-all" style="background: var(--color-platinum); color: var(--color-text);" data-tone="casual">Casual</button>
+                </div>
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+                <button id="cancel-tone-btn" class="flex-1 px-6 py-3 rounded-xl font-semibold transition-all hover:shadow-md" style="background: var(--color-platinum); color: var(--color-text);">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </button>
+                <button id="apply-tone-btn" class="flex-1 px-6 py-3 rounded-xl font-semibold text-white transition-all hover:shadow-lg hover:-translate-y-0.5" style="background: var(--color-carrot-orange);">
+                    <i class="fas fa-check mr-2"></i>Apply Tone
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Save Template Modal -->
+    <div id="save-template-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl border-2 transform transition-all" style="border-color: var(--color-carrot-orange);">
+            <div class="mb-6">
+                <div class="flex items-center mb-2">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3" style="background: linear-gradient(135deg, var(--color-carrot-orange), var(--color-blue-violet));">
+                        <i class="fas fa-save text-white"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold" style="color: var(--color-text);">Save Template</h2>
+                </div>
+                <p class="text-sm" style="color: var(--color-text-muted);">Give your template a memorable name</p>
+            </div>
+            
+            <div>
+                <label for="template-name-input" class="block text-sm font-semibold mb-2" style="color: var(--color-text);">
+                    <i class="fas fa-tag mr-1" style="color: var(--color-carrot-orange);"></i>Template Name
+                </label>
+                <input 
+                    type="text" 
+                    id="template-name-input" 
+                    class="input-field" 
+                    placeholder="e.g., Welcome Email, Follow-up Template"
+                    style="border-color: var(--color-platinum);"
+                >
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+                <button id="cancel-save-template-btn" class="flex-1 px-6 py-3 rounded-xl font-semibold transition-all hover:shadow-md" style="background: var(--color-platinum); color: var(--color-text);">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </button>
+                <button id="confirm-save-template-btn" class="flex-1 px-6 py-3 rounded-xl font-semibold text-white transition-all hover:shadow-lg hover:-translate-y-0.5" style="background: var(--color-carrot-orange);">
+                    <i class="fas fa-check mr-2"></i>Save Template
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Load Template Modal -->
+    <div id="load-template-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl border-2 transform transition-all" style="border-color: var(--color-blue-violet);">
+            <div class="mb-6">
+                <div class="flex items-center mb-2">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3" style="background: linear-gradient(135deg, var(--color-blue-violet), var(--color-carrot-orange));">
+                        <i class="fas fa-folder-open text-white"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold" style="color: var(--color-text);">Load Template</h2>
+                </div>
+                <p class="text-sm" style="color: var(--color-text-muted);">Select a template to load</p>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold mb-2" style="color: var(--color-text);">
+                    <i class="fas fa-list mr-1" style="color: var(--color-blue-violet);"></i>Available Templates
+                </label>
+                <div id="template-list" class="space-y-2 max-h-60 overflow-y-auto custom-scrollbar">
+                    <!-- Templates will be populated here -->
+                </div>
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+                <button id="cancel-load-template-btn" class="flex-1 px-6 py-3 rounded-xl font-semibold transition-all hover:shadow-md" style="background: var(--color-platinum); color: var(--color-text);">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Spam Rewrite Modal -->
+    <div id="spam-rewrite-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-8 max-w-lg w-full mx-4 shadow-2xl border-2 transform transition-all" style="border-color: var(--color-poppy);">
+            <div class="mb-6">
+                <div class="flex items-center mb-2">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3" style="background: linear-gradient(135deg, var(--color-poppy), var(--color-carrot-orange));">
+                        <i class="fas fa-broom text-white"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold" style="color: var(--color-text);">Rewrite Spam Words</h2>
+                </div>
+                <p class="text-sm" style="color: var(--color-text-muted);">Enter words/phrases to rewrite (comma-separated)</p>
+            </div>
+            
+            <div>
+                <label for="spam-words-input" class="block text-sm font-semibold mb-2" style="color: var(--color-text);">
+                    <i class="fas fa-exclamation-triangle mr-1" style="color: var(--color-poppy);"></i>Spam Words/Phrases
+                </label>
+                <textarea 
+                    id="spam-words-input" 
+                    class="input-field" 
+                    rows="4"
+                    placeholder="e.g., Name, Only, Open, Solution"
+                    style="border-color: var(--color-platinum); resize: vertical; min-height: 100px;"
+                ></textarea>
+                <p class="text-xs mt-2" style="color: var(--color-text-muted);">
+                    <i class="fas fa-info-circle mr-1"></i>Leave empty to use detected spam words automatically
+                </p>
+            </div>
+            
+            <div class="flex gap-3 mt-6">
+                <button id="cancel-spam-rewrite-btn" class="flex-1 px-6 py-3 rounded-xl font-semibold transition-all hover:shadow-md" style="background: var(--color-platinum); color: var(--color-text);">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </button>
+                <button id="confirm-spam-rewrite-btn" class="flex-1 px-6 py-3 rounded-xl font-semibold text-white transition-all hover:shadow-lg hover:-translate-y-0.5" style="background: var(--color-poppy);">
+                    <i class="fas fa-check mr-2"></i>Rewrite Words
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Help Modal -->
-    <div id="help-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+    <div id="help-modal" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto shadow-2xl border-2" style="border-color: var(--color-blue-violet);">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-slate-900">Keyboard Shortcuts & Help</h2>
-                <button id="close-help" class="text-slate-500 hover:text-slate-700 text-2xl">&times;</button>
+                <h2 class="text-2xl font-bold" style="color: var(--color-text);">Keyboard Shortcuts & Help</h2>
+                <button id="close-help" class="text-2xl w-10 h-10 rounded-lg transition-all" style="color: var(--color-text-muted);" onmouseover="this.style.background='var(--color-platinum)'" onmouseout="this.style.background='transparent'">&times;</button>
             </div>
             <div class="space-y-6">
                 <div>
-                    <h3 class="text-lg font-semibold text-slate-800 mb-3">Keyboard Shortcuts</h3>
+                    <h3 class="text-lg font-semibold mb-3" style="color: var(--color-blue-violet);">Keyboard Shortcuts</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div class="flex justify-between items-center p-2 bg-slate-50 rounded">
-                            <span>Bold</span>
-                            <kbd class="bg-slate-200 px-2 py-1 rounded text-sm">Ctrl+B</kbd>
+                        <div class="flex justify-between items-center p-3 rounded-lg border-2 transition-all hover:shadow-md" style="background: var(--color-light-bg); border-color: var(--color-platinum);">
+                            <span style="color: var(--color-text);">Bold</span>
+                            <kbd class="px-3 py-1.5 rounded-lg text-sm font-semibold" style="background: var(--color-blue-violet); color: white;">Ctrl+B</kbd>
                         </div>
-                        <div class="flex justify-between items-center p-2 bg-slate-50 rounded">
-                            <span>Italic</span>
-                            <kbd class="bg-slate-200 px-2 py-1 rounded text-sm">Ctrl+I</kbd>
+                        <div class="flex justify-between items-center p-3 rounded-lg border-2 transition-all hover:shadow-md" style="background: var(--color-light-bg); border-color: var(--color-platinum);">
+                            <span style="color: var(--color-text);">Italic</span>
+                            <kbd class="px-3 py-1.5 rounded-lg text-sm font-semibold" style="background: var(--color-blue-violet); color: white;">Ctrl+I</kbd>
                         </div>
-                        <div class="flex justify-between items-center p-2 bg-slate-50 rounded">
-                            <span>Underline</span>
-                            <kbd class="bg-slate-200 px-2 py-1 rounded text-sm">Ctrl+U</kbd>
+                        <div class="flex justify-between items-center p-3 rounded-lg border-2 transition-all hover:shadow-md" style="background: var(--color-light-bg); border-color: var(--color-platinum);">
+                            <span style="color: var(--color-text);">Underline</span>
+                            <kbd class="px-3 py-1.5 rounded-lg text-sm font-semibold" style="background: var(--color-blue-violet); color: white;">Ctrl+U</kbd>
                         </div>
-                        <div class="flex justify-between items-center p-2 bg-slate-50 rounded">
-                            <span>Undo</span>
-                            <kbd class="bg-slate-200 px-2 py-1 rounded text-sm">Ctrl+Z</kbd>
+                        <div class="flex justify-between items-center p-3 rounded-lg border-2 transition-all hover:shadow-md" style="background: var(--color-light-bg); border-color: var(--color-platinum);">
+                            <span style="color: var(--color-text);">Undo</span>
+                            <kbd class="px-3 py-1.5 rounded-lg text-sm font-semibold" style="background: var(--color-blue-violet); color: white;">Ctrl+Z</kbd>
                         </div>
-                        <div class="flex justify-between items-center p-2 bg-slate-50 rounded">
-                            <span>Redo</span>
-                            <kbd class="bg-slate-200 px-2 py-1 rounded text-sm">Ctrl+Y</kbd>
+                        <div class="flex justify-between items-center p-3 rounded-lg border-2 transition-all hover:shadow-md" style="background: var(--color-light-bg); border-color: var(--color-platinum);">
+                            <span style="color: var(--color-text);">Redo</span>
+                            <kbd class="px-3 py-1.5 rounded-lg text-sm font-semibold" style="background: var(--color-blue-violet); color: white;">Ctrl+Y</kbd>
                         </div>
-                        <div class="flex justify-between items-center p-2 bg-slate-50 rounded">
-                            <span>Save Template</span>
-                            <kbd class="bg-slate-200 px-2 py-1 rounded text-sm">Ctrl+S</kbd>
+                        <div class="flex justify-between items-center p-3 rounded-lg border-2 transition-all hover:shadow-md" style="background: var(--color-light-bg); border-color: var(--color-platinum);">
+                            <span style="color: var(--color-text);">Save Template</span>
+                            <kbd class="px-3 py-1.5 rounded-lg text-sm font-semibold" style="background: var(--color-carrot-orange); color: white;">Ctrl+S</kbd>
                         </div>
-                        <div class="flex justify-between items-center p-2 bg-slate-50 rounded">
-                            <span>Copy HTML</span>
-                            <kbd class="bg-slate-200 px-2 py-1 rounded text-sm">Ctrl+Shift+C</kbd>
+                        <div class="flex justify-between items-center p-3 rounded-lg border-2 transition-all hover:shadow-md" style="background: var(--color-light-bg); border-color: var(--color-platinum);">
+                            <span style="color: var(--color-text);">Copy HTML</span>
+                            <kbd class="px-3 py-1.5 rounded-lg text-sm font-semibold" style="background: var(--color-blue-violet); color: white;">Ctrl+Shift+C</kbd>
                         </div>
-                        <div class="flex justify-between items-center p-2 bg-slate-50 rounded">
-                            <span>AI Optimize</span>
-                            <kbd class="bg-slate-200 px-2 py-1 rounded text-sm">Ctrl+O</kbd>
+                        <div class="flex justify-between items-center p-3 rounded-lg border-2 transition-all hover:shadow-md" style="background: var(--color-light-bg); border-color: var(--color-platinum);">
+                            <span style="color: var(--color-text);">AI Optimize</span>
+                            <kbd class="px-3 py-1.5 rounded-lg text-sm font-semibold" style="background: var(--color-blue-violet); color: white;">Ctrl+O</kbd>
                         </div>
                     </div>
                 </div>
                 <div>
-                    <h3 class="text-lg font-semibold text-slate-800 mb-3">Features</h3>
-                    <ul class="space-y-2 text-slate-700">
-                        <li class="flex items-start"><i class="fas fa-check text-green-500 mr-2 mt-1"></i>Real-time spam checking with keyword highlighting</li>
-                        <li class="flex items-start"><i class="fas fa-check text-green-500 mr-2 mt-1"></i>AI-powered content optimization and suggestions</li>
-                        <li class="flex items-start"><i class="fas fa-check text-green-500 mr-2 mt-1"></i>Template variables with live preview</li>
-                        <li class="flex items-start"><i class="fas fa-check text-green-500 mr-2 mt-1"></i>Rich text editor with formatting tools</li>
-                        <li class="flex items-start"><i class="fas fa-check text-green-500 mr-2 mt-1"></i>Auto-save functionality</li>
-                        <li class="flex items-start"><i class="fas fa-check text-green-500 mr-2 mt-1"></i>Template library and management</li>
+                    <h3 class="text-lg font-semibold mb-3" style="color: var(--color-carrot-orange);">Features</h3>
+                    <ul class="space-y-2" style="color: var(--color-text);">
+                        <li class="flex items-start"><i class="fas fa-check mr-2 mt-1" style="color: var(--color-carrot-orange);"></i>Real-time spam checking with keyword highlighting</li>
+                        <li class="flex items-start"><i class="fas fa-check mr-2 mt-1" style="color: var(--color-carrot-orange);"></i>AI-powered content optimization and suggestions</li>
+                        <li class="flex items-start"><i class="fas fa-check mr-2 mt-1" style="color: var(--color-carrot-orange);"></i>Template variables with live preview</li>
+                        <li class="flex items-start"><i class="fas fa-check mr-2 mt-1" style="color: var(--color-carrot-orange);"></i>Rich text editor with formatting tools</li>
+                        <li class="flex items-start"><i class="fas fa-check mr-2 mt-1" style="color: var(--color-carrot-orange);"></i>Auto-save functionality</li>
+                        <li class="flex items-start"><i class="fas fa-check mr-2 mt-1" style="color: var(--color-carrot-orange);"></i>Template library and management</li>
                     </ul>
                 </div>
             </div>
@@ -523,23 +1058,23 @@
     </div>
 
     <!-- Status Bar -->
-    <div class="fixed bottom-0 left-0 right-0 bg-slate-800 text-white py-2 px-4 text-sm flex justify-between items-center z-40">
-        <div class="flex items-center space-x-4">
-            <span id="auto-save-status" class="flex items-center">
-                <i class="fas fa-save mr-1 text-green-400"></i>
+    <div class="fixed bottom-0 left-0 right-0 text-white py-3 px-6 text-sm flex justify-between items-center z-40 backdrop-blur-lg border-t-2" style="background: linear-gradient(135deg, var(--color-black) 0%, #1a191a 100%); border-color: var(--color-platinum);">
+        <div class="flex items-center space-x-6">
+            <span id="auto-save-status" class="flex items-center font-medium">
+                <i class="fas fa-save mr-2" style="color: var(--color-carrot-orange);"></i>
                 <span>Auto-saved</span>
             </span>
             <span id="word-count" class="flex items-center">
-                <i class="fas fa-font mr-1"></i>
+                <i class="fas fa-font mr-2" style="color: var(--color-blue-violet);"></i>
                 <span>Words: 0</span>
             </span>
             <span id="char-count" class="flex items-center">
-                <i class="fas fa-keyboard mr-1"></i>
+                <i class="fas fa-keyboard mr-2" style="color: var(--color-blue-violet);"></i>
                 <span>Characters: 0</span>
             </span>
         </div>
         <div class="flex items-center space-x-4">
-            <span id="last-saved" class="text-slate-300">
+            <span id="last-saved" class="font-medium" style="color: var(--color-platinum);">
                 Last saved: Just now
             </span>
         </div>
@@ -712,7 +1247,10 @@
                     this.renderSubjectLine();
                     this.saveToLocalStorage();
                 });
-                this.nodes.emailPreview.addEventListener('input', () => this.updateSourceFromPreview());
+                this.nodes.emailPreview.addEventListener('input', () => {
+                    this.styleAllLinks();
+                    this.updateSourceFromPreview();
+                });
                 this.nodes.copyHtmlBtn.addEventListener('click', () => this.copyHtmlToClipboard());
 
                 // Toolbar events
@@ -750,6 +1288,89 @@
                 document.getElementById('undo-btn').addEventListener('click', () => this.undo());
                 document.getElementById('redo-btn').addEventListener('click', () => this.redo());
 
+                // Link modal events
+                document.getElementById('insert-link-btn').addEventListener('click', () => this.insertLink());
+                document.getElementById('cancel-link-btn').addEventListener('click', () => this.hideLinkModal());
+                
+                // Close modal on Enter key in URL input
+                document.getElementById('link-url-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.insertLink();
+                    }
+                });
+                
+                // Close modal on Escape key
+                document.getElementById('link-modal').addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        this.hideLinkModal();
+                    }
+                });
+                
+                // Close modal when clicking backdrop
+                document.getElementById('link-modal').addEventListener('click', (e) => {
+                    if (e.target.id === 'link-modal') {
+                        this.hideLinkModal();
+                    }
+                });
+                
+                // Help modal events
+                document.getElementById('help-btn').addEventListener('click', () => {
+                    document.getElementById('help-modal').classList.remove('hidden');
+                });
+                document.getElementById('close-help').addEventListener('click', () => {
+                    document.getElementById('help-modal').classList.add('hidden');
+                });
+                document.getElementById('help-modal').addEventListener('click', (e) => {
+                    if (e.target.id === 'help-modal') {
+                        document.getElementById('help-modal').classList.add('hidden');
+                    }
+                });
+                
+                // Tone modal events
+                document.getElementById('apply-tone-btn').addEventListener('click', () => this.applyToneAdjustment());
+                document.getElementById('cancel-tone-btn').addEventListener('click', () => this.hideToneModal());
+                document.getElementById('tone-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.applyToneAdjustment();
+                    }
+                });
+                document.querySelectorAll('.tone-preset').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.getElementById('tone-input').value = e.target.dataset.tone;
+                    });
+                });
+                document.getElementById('tone-modal').addEventListener('click', (e) => {
+                    if (e.target.id === 'tone-modal') this.hideToneModal();
+                });
+                
+                // Save template modal events
+                document.getElementById('confirm-save-template-btn').addEventListener('click', () => this.confirmSaveTemplate());
+                document.getElementById('cancel-save-template-btn').addEventListener('click', () => this.hideSaveTemplateModal());
+                document.getElementById('template-name-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.confirmSaveTemplate();
+                    }
+                });
+                document.getElementById('save-template-modal').addEventListener('click', (e) => {
+                    if (e.target.id === 'save-template-modal') this.hideSaveTemplateModal();
+                });
+                
+                // Load template modal events
+                document.getElementById('cancel-load-template-btn').addEventListener('click', () => this.hideLoadTemplateModal());
+                document.getElementById('load-template-modal').addEventListener('click', (e) => {
+                    if (e.target.id === 'load-template-modal') this.hideLoadTemplateModal();
+                });
+                
+                // Spam rewrite modal events
+                document.getElementById('confirm-spam-rewrite-btn').addEventListener('click', () => this.confirmSpamRewrite());
+                document.getElementById('cancel-spam-rewrite-btn').addEventListener('click', () => this.hideSpamRewriteModal());
+                document.getElementById('spam-rewrite-modal').addEventListener('click', (e) => {
+                    if (e.target.id === 'spam-rewrite-modal') this.hideSpamRewriteModal();
+                });
+
                 // If spam keywords load after initial render, re-highlight preview
                 document.addEventListener('spamKeywordsReady', () => {
                     this.highlightSpamInPreview();
@@ -762,8 +1383,8 @@
 
                 if (command === 'createLink') {
                     this.state.savedSelection = this.saveSelection(this.nodes.emailPreview);
-                    value = prompt('Enter the URL:', 'https://');
-                    if (!value) return;
+                    this.showLinkModal();
+                    return;
                 }
                 
                 this.nodes.emailPreview.focus();
@@ -775,6 +1396,94 @@
                 document.execCommand(command, false, value);
                 this.state.savedSelection = null;
                 this.updateSourceFromPreview();
+            },
+            
+            showLinkModal() {
+                const linkModal = document.getElementById('link-modal');
+                const linkUrlInput = document.getElementById('link-url-input');
+                const linkTextInput = document.getElementById('link-text-input');
+                
+                // Get selected text if any
+                const selection = window.getSelection();
+                const selectedText = selection.toString();
+                
+                // Pre-fill link text with selected text
+                linkTextInput.value = selectedText;
+                linkUrlInput.value = 'https://';
+                
+                linkModal.classList.remove('hidden');
+                setTimeout(() => linkUrlInput.focus(), 100);
+            },
+            
+            hideLinkModal() {
+                const linkModal = document.getElementById('link-modal');
+                linkModal.classList.add('hidden');
+            },
+            
+            insertLink() {
+                const linkUrlInput = document.getElementById('link-url-input');
+                const linkTextInput = document.getElementById('link-text-input');
+                const url = linkUrlInput.value.trim();
+                
+                if (!url || url === 'https://') {
+                    linkUrlInput.style.borderColor = 'var(--color-poppy)';
+                    setTimeout(() => {
+                        linkUrlInput.style.borderColor = 'var(--color-platinum)';
+                    }, 1500);
+                    return;
+                }
+                
+                this.nodes.emailPreview.focus();
+                
+                if (this.state.savedSelection) {
+                    this.restoreSelection(this.nodes.emailPreview, this.state.savedSelection);
+                }
+                
+                // If custom text is provided, replace selection with it first
+                const linkText = linkTextInput.value.trim();
+                if (linkText && window.getSelection().toString() !== linkText) {
+                    document.execCommand('insertText', false, linkText);
+                    // Re-select the inserted text
+                    const selection = window.getSelection();
+                    const range = document.createRange();
+                    const textNode = selection.anchorNode;
+                    if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+                        range.setStart(textNode, textNode.textContent.length - linkText.length);
+                        range.setEnd(textNode, textNode.textContent.length);
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                    }
+                }
+                
+                document.execCommand('createLink', false, url);
+                
+                // Apply custom styling to the newly created link
+                setTimeout(() => {
+                    const selection = window.getSelection();
+                    if (selection.anchorNode) {
+                        let element = selection.anchorNode.parentElement;
+                        // Find the anchor tag
+                        while (element && element.tagName !== 'A' && element !== this.nodes.emailPreview) {
+                            element = element.parentElement;
+                        }
+                        if (element && element.tagName === 'A') {
+                            element.style.color = '#0400ff';
+                            element.style.textDecoration = 'underline';
+                            // Wrap content in font tag with color for better email client compatibility
+                            if (element.innerHTML && !element.querySelector('font[color="#0400ff"]')) {
+                                element.innerHTML = `<font color="#0400ff"><u>${element.textContent}</u></font>`;
+                            }
+                        }
+                    }
+                    this.updateSourceFromPreview();
+                }, 50);
+                
+                this.state.savedSelection = null;
+                this.hideLinkModal();
+                
+                // Clear inputs
+                linkUrlInput.value = '';
+                linkTextInput.value = '';
             },
 
             renderPreview() {
@@ -796,7 +1505,23 @@
                 this.nodes.emailPreview.innerHTML = template;
                 // Apply spam highlights in the preview before restoring selection
                 this.highlightSpamInPreview();
+                // Apply link styling to all links
+                this.styleAllLinks();
                 this.restoreSelection(this.nodes.emailPreview, selection);
+            },
+            
+            styleAllLinks() {
+                // Find all anchor tags in the email preview and apply styling
+                const links = this.nodes.emailPreview.querySelectorAll('a');
+                links.forEach(link => {
+                    link.style.color = '#0400ff';
+                    link.style.textDecoration = 'underline';
+                    // Ensure proper HTML structure for email clients
+                    if (link.innerHTML && !link.querySelector('font[color="#0400ff"]')) {
+                        const text = link.textContent;
+                        link.innerHTML = `<font color="#0400ff"><u>${text}</u></font>`;
+                    }
+                });
             },
 
             renderSubjectLine() {
@@ -1069,8 +1794,35 @@
                     return;
                 }
 
-                const tone = prompt('What tone would you like? (e.g., professional, friendly, urgent, casual):');
-                if (!tone) return;
+                this.showToneModal();
+            },
+            
+            showToneModal() {
+                const toneModal = document.getElementById('tone-modal');
+                const toneInput = document.getElementById('tone-input');
+                toneInput.value = '';
+                toneModal.classList.remove('hidden');
+                setTimeout(() => toneInput.focus(), 100);
+            },
+            
+            hideToneModal() {
+                document.getElementById('tone-modal').classList.add('hidden');
+            },
+            
+            async applyToneAdjustment() {
+                const toneInput = document.getElementById('tone-input');
+                const tone = toneInput.value.trim();
+                
+                if (!tone) {
+                    toneInput.style.borderColor = 'var(--color-poppy)';
+                    setTimeout(() => {
+                        toneInput.style.borderColor = 'var(--color-platinum)';
+                    }, 1500);
+                    return;
+                }
+                
+                this.hideToneModal();
+                const content = this.nodes.htmlInput.value;
 
                 if (!this.aiReady()) return;
                 this.showAILoading();
@@ -1481,8 +2233,32 @@
 
             // Template Management Methods
             saveTemplate() {
-                const templateName = prompt('Enter template name:');
-                if (!templateName) return;
+                this.showSaveTemplateModal();
+            },
+            
+            showSaveTemplateModal() {
+                const modal = document.getElementById('save-template-modal');
+                const input = document.getElementById('template-name-input');
+                input.value = '';
+                modal.classList.remove('hidden');
+                setTimeout(() => input.focus(), 100);
+            },
+            
+            hideSaveTemplateModal() {
+                document.getElementById('save-template-modal').classList.add('hidden');
+            },
+            
+            confirmSaveTemplate() {
+                const input = document.getElementById('template-name-input');
+                const templateName = input.value.trim();
+                
+                if (!templateName) {
+                    input.style.borderColor = 'var(--color-poppy)';
+                    setTimeout(() => {
+                        input.style.borderColor = 'var(--color-platinum)';
+                    }, 1500);
+                    return;
+                }
 
                 const template = {
                     name: templateName,
@@ -1496,6 +2272,7 @@
                 savedTemplates.push(template);
                 localStorage.setItem('emailTemplates', JSON.stringify(savedTemplates));
 
+                this.hideSaveTemplateModal();
                 this.showNotification('Template saved successfully!');
                 this.updateLastSaved();
             },
@@ -1503,17 +2280,49 @@
             loadTemplate() {
                 const savedTemplates = JSON.parse(localStorage.getItem('emailTemplates') || '[]');
                 if (savedTemplates.length === 0) {
-                    alert('No saved templates found');
+                    this.showNotification('No saved templates found', 'warning');
                     return;
                 }
 
-                const templateNames = savedTemplates.map(t => t.name);
-                const selectedName = prompt(`Available templates:\n${templateNames.join('\n')}\n\nEnter template name to load:`);
-                if (!selectedName) return;
-
-                const template = savedTemplates.find(t => t.name === selectedName);
+                this.showLoadTemplateModal(savedTemplates);
+            },
+            
+            showLoadTemplateModal(templates) {
+                const modal = document.getElementById('load-template-modal');
+                const templateList = document.getElementById('template-list');
+                
+                templateList.innerHTML = '';
+                templates.forEach(template => {
+                    const item = document.createElement('div');
+                    item.className = 'template-item';
+                    item.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div class="flex-grow">
+                                <div class="font-semibold" style="color: var(--color-text);">${this.constructor.escapeHtml(template.name)}</div>
+                                <div class="text-xs mt-1" style="color: var(--color-text-muted);">
+                                    <i class="fas fa-clock mr-1"></i>${new Date(template.timestamp).toLocaleString()}
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right" style="color: var(--color-blue-violet);"></i>
+                        </div>
+                    `;
+                    item.addEventListener('click', () => this.loadTemplateByName(template.name));
+                    templateList.appendChild(item);
+                });
+                
+                modal.classList.remove('hidden');
+            },
+            
+            hideLoadTemplateModal() {
+                document.getElementById('load-template-modal').classList.add('hidden');
+            },
+            
+            loadTemplateByName(templateName) {
+                const savedTemplates = JSON.parse(localStorage.getItem('emailTemplates') || '[]');
+                const template = savedTemplates.find(t => t.name === templateName);
+                
                 if (!template) {
-                    alert('Template not found');
+                    this.showNotification('Template not found', 'error');
                     return;
                 }
 
@@ -1528,6 +2337,7 @@
                 });
 
                 this.nodes.htmlInput.dispatchEvent(new Event('input', { bubbles: true }));
+                this.hideLoadTemplateModal();
                 this.showNotification('Template loaded successfully!');
             },
 
@@ -1811,10 +2621,33 @@ Always prioritize brevity while maintaining quality.`;
             this.renderPreview();
             const detected = this.collectCurrentSpamKeywords();
             const defaultList = detected.slice(0, 30).join(', ');
-            const userList = prompt('Enter words/phrases to rewrite (comma-separated). Leave as is to use detected:', defaultList);
-            if (userList === null) return;
+            this.showSpamRewriteModal(defaultList);
+        };
+        
+        EmailEditor.showSpamRewriteModal = function(defaultWords) {
+            const modal = document.getElementById('spam-rewrite-modal');
+            const input = document.getElementById('spam-words-input');
+            input.value = defaultWords;
+            modal.classList.remove('hidden');
+            setTimeout(() => input.focus(), 100);
+        };
+        
+        EmailEditor.hideSpamRewriteModal = function() {
+            document.getElementById('spam-rewrite-modal').classList.add('hidden');
+        };
+        
+        EmailEditor.confirmSpamRewrite = async function() {
+            const input = document.getElementById('spam-words-input');
+            const userList = input.value.trim();
             const terms = (userList || '').split(',').map(s => s.trim()).filter(Boolean);
-            if (terms.length === 0) { this.showNotification('No terms provided'); return; }
+            
+            if (terms.length === 0) { 
+                this.showNotification('No terms provided'); 
+                return; 
+            }
+            
+            this.hideSpamRewriteModal();
+            const content = this.nodes.htmlInput.value;
 
             if (!this.aiReady()) return;
             this.showAILoading();
