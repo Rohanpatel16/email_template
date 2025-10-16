@@ -1915,6 +1915,7 @@
                     suggest: this.formatSuggestionsResponse,
                     tone: this.formatToneResponse,
                     subject: this.formatSubjectResponse,
+                    replacement: this.formatReplacementResponse,
                     general: this.formatGeneralResponse
                 };
                 
@@ -2086,6 +2087,82 @@
                 `;
             },
 
+            formatReplacementResponse(content) {
+                // Content is expected to be an object: { applied, present, skipped }
+                if (typeof content === 'string') {
+                    // Fallback for string content
+                    return this.formatGeneralResponse(content);
+                }
+                
+                const { applied, present, skipped } = content;
+                
+                if (applied === 0) {
+                    const msg = skipped && skipped.length
+                        ? 'No occurrences found to replace. The following were not found in your email.'
+                        : 'No occurrences found to replace.';
+                    return `
+                        <div class="ai-response-general">
+                            <div class="ai-content-card">
+                                <p class="text-slate-600 mb-3">${msg}</p>
+                                ${skipped && skipped.length ? `
+                                    <div class="space-y-2">
+                                        ${skipped.map(m => `
+                                            <div class="p-2 rounded" style="background: rgba(0,0,0,0.05);">
+                                                <span class="text-sm text-slate-500">${this.escapeHtml(m.from)}</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                return `
+                    <div class="ai-response-general">
+                        <div class="ai-content-card">
+                            <div class="flex items-center mb-4">
+                                <i class="fas fa-check-circle text-2xl mr-3" style="color: var(--color-success);"></i>
+                                <h3 class="text-lg font-semibold">Applied ${applied} Replacement${applied === 1 ? '' : 's'}</h3>
+                            </div>
+                            
+                            <div class="space-y-3">
+                                ${present.map(m => `
+                                    <div class="p-3 rounded-lg border-2" style="background: var(--color-light-bg); border-color: var(--color-platinum);">
+                                        <div class="flex items-start gap-3">
+                                            <div class="flex-1">
+                                                <div class="text-sm text-slate-500 mb-1">Original:</div>
+                                                <div class="p-2 rounded mb-2" style="background: rgba(223, 41, 53, 0.1); border-left: 3px solid var(--color-poppy);">
+                                                    ${this.escapeHtml(m.from)}
+                                                </div>
+                                                <div class="text-sm text-slate-500 mb-1">Replaced with:</div>
+                                                <div class="p-2 rounded" style="background: rgba(232, 144, 5, 0.1); border-left: 3px solid var(--color-success);">
+                                                    <strong>${this.escapeHtml(m.to)}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            
+                            ${skipped && skipped.length ? `
+                                <div class="mt-4 pt-4 border-t-2" style="border-color: var(--color-platinum);">
+                                    <p class="text-sm text-slate-500 mb-2">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        Skipped (not found in email):
+                                    </p>
+                                    <div class="space-y-1">
+                                        ${skipped.map(m => `
+                                            <div class="text-sm text-slate-400">${this.escapeHtml(m.from)}</div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            },
+            
             formatGeneralResponse(content) {
                 const parsedContent = this.parseMarkdown(content);
                 return `
@@ -2773,15 +2850,6 @@ Always prioritize brevity while maintaining quality.`;
                 const present = mapping.filter(m => m && typeof m.from === 'string' && appearsInPreview(m.from));
                 const skipped = mapping.filter(m => m && typeof m.from === 'string' && !appearsInPreview(m.from));
 
-                // Show a quick pre-scan summary so users know what's about to change
-                if (present.length === 0) {
-                    const msg = skipped.length
-                        ? 'No matches detected in your email. Not found:<br>' + skipped.map(m => `${this.escapeHtml(m.from)}`).join('<br>')
-                        : 'No matches detected in your email.';
-                    // Show but continue to apply (will just say 0 applied)
-                    this.showAIResponse(msg);
-                }
-
                 let applied = present.length ? this.applyReplacementsToPreview(present) : 0;
                 if (applied === 0) {
                     // Final fallback: attempt replacements directly on source HTML (DOM-walk to avoid attributes)
@@ -2792,21 +2860,21 @@ Always prioritize brevity while maintaining quality.`;
                         applied = appliedToSource;
                     }
                 }
-                if (applied === 0) {
-                    const msg = skipped.length
-                        ? 'No occurrences found to replace. The following were not found in your email:<br>' +
-                          skipped.map(m => `${this.escapeHtml(m.from)}`).join('<br>')
-                        : 'No occurrences found to replace.';
-                    this.showAIResponse(msg);
-                } else {
-                    // Sync preview -> source, re-highlight, and show summary
+                
+                // Sync preview -> source and re-highlight if any applied
+                if (applied > 0) {
                     this.updateSourceFromPreview();
-                    this.showAIResponse(
-                        `Applied ${applied} replacement${applied === 1 ? '' : 's'}:<br>` +
-                        present.map(m => `${this.escapeHtml(m.from)} → <b>${this.escapeHtml(m.to)}</b>`).join('<br>') +
-                        (skipped.length ? '<hr class="my-2"><span class="text-slate-500">Skipped (not found):</span><br>' + skipped.map(m => `${this.escapeHtml(m.from)}`).join('<br>') : '')
-                    );
-                    this.showNotification('Spam words rewritten');
+                }
+                
+                // Show formatted replacement response
+                this.showAIResponse({
+                    applied: applied,
+                    present: present,
+                    skipped: skipped
+                }, 'replacement');
+                
+                if (applied > 0) {
+                    this.showNotification('Spam words rewritten successfully');
                 }
             } catch (error) {
                 const errorMsg = error.message?.includes('API') || error.message?.includes('key')
